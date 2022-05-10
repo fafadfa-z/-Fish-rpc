@@ -9,6 +9,7 @@ aux_source_directory(./ DIR_SRCS)
 aux_source_directory(source/base DIR_SRCS)
 aux_source_directory(source/coroutine DIR_SRCS)
 aux_source_directory(source/net DIR_SRCS)
+aux_source_directory(source/rpc DIR_SRCS)
 
 
 

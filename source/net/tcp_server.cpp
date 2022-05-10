@@ -7,8 +7,8 @@
 
 namespace Fish
 {
-    TcpServer::TcpServer(TcpAddr addr)
-        : addr_(addr)
+    TcpServer::TcpServer(TcpAddr addr, std::string name)
+        : addr_(addr), name_(name),loop_("tcp servr loop")
     {
         createListenSocket();
     }
@@ -43,25 +43,37 @@ namespace Fish
         // 这里应该加一些检查
 
         assert(listenFd_ != -1);
-        assert(runningFlag_ == false);
 
         listen(listenFd_, 64);
 
-        runningFlag_ = true;
-
-        struct sockaddr_in clientAddr = {0};
-        int socklen = sizeof(struct sockaddr_in);
-
         uring_.beginLoop();
 
-        while (runningFlag_)
-        {
-            auto fd = ::accept(listenFd_, (struct sockaddr *)&clientAddr, (socklen_t *)&socklen);
+        loop_.setTask([this]{listen_in_loop();});
 
-            uring_.addNewFd(fd);
+        auto thread = loop_.beginInNewThread();
 
-            ::memset(&clientAddr, 0, sizeof(clientAddr));
-        }
+        thread.detach();
+    }
+
+    void TcpServer::listen_in_loop()  //监听、接收新连接
+    {
+        clientAddr_ = {0};
+
+        static constexpr size_t socklen = sizeof(const sockaddr_in);
+
+        auto fd = ::accept(listenFd_, (struct sockaddr *)&clientAddr_, (socklen_t *)&socklen);
+
+        uring_.addNewFd(fd);
+    }
+
+    void TcpServer::stop()
+    {
+        loop_.closeLoop();
+    }
+
+    TcpServer::~TcpServer()
+    {
+        
     }
 
 }
