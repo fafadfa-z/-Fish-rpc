@@ -1,0 +1,85 @@
+#ifndef _LOGGER_H
+#define _LOGGER_H
+
+#include "log_stream.h"
+#include "log_thread.h"
+
+#include <functional>
+#include <cassert>
+#include <iostream>
+
+
+
+namespace Fish
+{
+  extern  LogThread *entity;
+ 
+  LogThread* init();
+
+  enum LogLevel
+  {
+    INFO_,
+    DEBUG_,
+    FATAL_,
+    HTTP_
+  };
+
+  class Logger
+  {
+  public:
+    Logger(std::function<void(char *, int)>);
+
+    constexpr char const *levelToStr();
+
+    LogStream &receive(const char *fileName, int line, const char *funName);
+
+    unsigned int findFileName(const char *);
+
+    std::string dealFunName(const char *funName);
+
+    static void resizeBuf()
+    {
+      fileN.resize(maxNameSize);
+      funN.resize(maxNameSize);
+    }
+
+  private:
+    void dealLogStr(const char *, std::string &buf,int maxSize = 15);
+
+    inline static thread_local std::string fileN;  //文件名
+    inline static thread_local std::string funN;   //函数名
+
+    LogStream stream_;
+
+    static const int maxNameSize = 25; //文件名等缓冲区的最大容量
+  };
+
+  LogStream& end(LogStream& stream);  //流结束标志
+
+}  // namespace Log
+
+const bool enableHttpDebug = false;
+
+constexpr Fish::LogLevel logLevel = Fish::LogLevel::DEBUG_;
+
+//暂时先设计成不支持动态变化日志等级的模式
+#define LOG_INFO                        \
+  if constexpr(logLevel <= Fish::LogLevel::INFO_) \
+  Fish::entity->logger_->receive(__FILE__, __LINE__, __func__)
+
+#define LOG_DEBUG                        \
+  if constexpr(logLevel <= Fish::LogLevel::DEBUG_) \
+  Fish::entity->logger_->receive(__FILE__, __LINE__, __func__)
+
+#define LOG_FATAL                        \
+  if constexpr(logLevel <= Fish::LogLevel::FATAL_) \
+  Fish::entity->logger_->receive(__FILE__, __LINE__, __func__)
+
+#define LOG_HTTP       \
+  if constexpr(enableHttpDebug) \
+  Fish::entity->logger_ ->receive(__FILE__, __LINE__, __func__)
+
+#define LOG_COUT Fish::cout
+
+
+#endif

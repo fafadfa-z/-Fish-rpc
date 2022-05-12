@@ -1,72 +1,118 @@
-#pragma once
+#ifndef _TIMMRE_H
+#define _TIMMER_H
 
-#include "sync/mutex.h"
-
-#include <memory>
 #include <functional>
-#include <set>
+#include <vector>
+#include <list>
+#include <atomic>
+#include <mutex>
+#include <unordered_map>
 
+//定时器线程
 namespace Fish
 {
-    class TimeManager;
-
-    class Timer : public std::enable_shared_from_this<Timer>
+    class TimerTask //定时器任务
     {
-        friend class TimeManager;
     public:
-        using ptr = std::shared_ptr<Timer>;
+        TimerTask(int time,bool repeatable = false,int id = 0);
 
-        void cancel();
-        void refresh();
-        void reset(uint64_t ms, bool from_now);
+        virtual ~TimerTask(){}
 
-        struct Compare
+        virtual void work() = 0;
+
+        bool repeatable() const {return repeatable_;}
+
+        long timePoint()const {return timePoint_;}
+
+    protected:
+
+        long timePoint_;  //记录应该执行的时间
+        long insertTime_; //记录放入定时器中的时间
+
+        bool repeatable_; //是否是重复事件
+
+        int id_; //便于以后用来删除
+    };
+
+    //需要传入时间的版本
+    class NeedTime : public TimerTask
+    {
+    public:
+        NeedTime(int time, bool repeatable = false,int id = 0)
+            :TimerTask(time,repeatable,id)
+        {}
+
+        void setTask(std::function<void(int)>task){task_ = task;}
+        
+        void work() override;
+
+
+        std::function<void(int)>task_;
+    };
+
+    //不需要时间的版本
+    class NotNeedTime : public TimerTask
+    {
+    public:
+        NotNeedTime(int time,bool repeatable = false, int id = 0)
+            :TimerTask(time,repeatable,id)
+        {}
+
+        void setTask(std::function<void()>task){task_ = task;}
+
+        void work() override
         {
-            bool operator()(const Timer::ptr &, const Timer::ptr &) const;
-        };
+            task_();
+        }
 
-    private:
-        uint64_t ms_ = 0;
-        uint64_t next_ = 0;
-
-        std::function<void()> cb_;
-
-        bool period_ = false;
-
-        TimeManager *manager_ = nullptr;
-
-    private:
-        Timer(uint64_t ms, std::function<void()> cb, bool priod, TimeManager *manager);
-        Timer(uint64_t next);
+        std::function<void()>task_;
     };
 
-    class TimeManager
+
+    // 定时器类，分辨率为10ms
+    class Timmer
     {
-        friend class Timer;
-
     public:
-        using MutexType = Mutex;
+        using timeDuration = std::chrono::duration<int, std::milli>;
 
-        TimeManager() = default;
-        ~TimeManager() = default;
+        static Timmer* init(int);
 
-        Timer::ptr addTimer(uint64_t ms, std::function<void()>cb,bool priod = false);
+        Timmer(const Timmer &another) = delete;
 
-        Timer::ptr addConnditionTimer(uint64_t ms, std::function<void()>cb,std::weak_ptr<void>cond,bool priod = false);
+        Timmer &operator=(const Timmer &another) = delete;
 
-        uint64_t getNextTimer();
+        ~Timmer();
 
-        bool hasTimer();
+        void start();
 
+        void addOnceTask(std::function<void()>, int);   // 用来添加单次任务
+        void addOnceTask(std::function<void(int)>, int);
+
+        bool addPriodTask(std::function<void()>, int, int);  // 用来添加周期式任务
+        bool addPriodTask(std::function<void(int)>, int, int);
+
+        bool removePriodTask(int); // 用来删除周期式任务
 
     private:
 
-        void addTimer(Timer::ptr& timer);
+        Timmer(int);
 
+        const int timeNum_;
 
-    private:
-        MutexType mut_;
-        std::set<Timer::ptr, Timer::Compare>timers_;
+        std::vector<std::list<TimerTask*>> timeWheel_; //时间轮的数据结构
+
+        std::vector<std::mutex> mutexVec; //为时间轮每一个扇叶申请一个互斥锁
+
+        
+        std::unordered_map<int,TimerTask*> priodTimerMap_; //存储周期型定时器
+        std::mutex priodTimerGuarder_;
+
+        int wheelIndex_; //时间轮指针
+
+        bool working_;
+
+        inline static Timmer* entity_ = nullptr;
     };
+}
 
-} // namespace Fish
+#endif
