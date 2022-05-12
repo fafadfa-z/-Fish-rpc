@@ -1,5 +1,6 @@
 #include "rpc/serialize_buf.h"
 #include <string.h>
+#include <iostream>
 
 namespace Fish::rpc
 {
@@ -15,13 +16,12 @@ namespace Fish::rpc
         [[unlikely]] if (len > buf_.size())
         {
             len = buf_.size();
+            std::cout<<"Rpc: 索取了超过容量的数据"<<std::endl;
         }
 
-        auto iter_begin = buf_.end() - len;
+        std::copy(buf_.begin(),buf_.begin()+len, static_cast<char *>(buf));
 
-        std::copy(iter_begin, buf_.end(), static_cast<char *>(buf));
-
-        buf_.erase(iter_begin, buf_.end());
+        buf_.erase(buf_.begin(),buf_.begin()+len);
     }
 
     void SeriBuf::input_int8(int8_t value)

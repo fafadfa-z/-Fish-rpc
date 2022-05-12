@@ -3,42 +3,54 @@
 
 #include "rpc/protocol.h"
 
+
 using namespace std;
 
-int fun(int a, char b)
+vector<int> fun(vector<int>vec)
 {
+    vector<int>result;
+    
+    cout<<"传入参数: "<<endl;
 
-    return a + (int)b;
+    for(auto num : vec)
+    {
+        cout<<num<<"\t";
+        result.push_back(num+3);
+    }
+    cout<<endl;
+
+    return result;
 }
 
 int main()
 {
-    std::function<int(int, int)> f(fun);
+    std::function<vector<int>(vector<int>)> f(fun);
 
     Fish::rpc::RpcProvider s({"127.0.0.1", 8848});
 
-    // s.registerMethod("fun",f);
+    
 
-    std::vector<uint8_t> vec;
+    s.registerMethod("fun",f);
 
-    std::pair<int, int> pa;
+    std::vector<int> vec{1,2,3,4,5};
 
-    // Fish::rpc::FunPacket p;
+    Fish::rpc::Serializer ss;
 
-    Fish::rpc::findType(pa, vec);
+    ss<<vec;
 
-    for (auto num : vec)
-    {
-        cout << (int)num << endl;
-    }
+    Fish::rpc::Serializer ret;
 
-    // cout<<"Hello!"<<endl;
+    s.run("fun",ss,ret);
 
-    // Fish::TcpAddr addr("39.108.131.90",8848);
+    std::vector<int> retVec;
 
-    // Fish::TcpServer server(addr);
+    ret>>retVec;
 
-    // server.begin();
+    cout<<"now output answer:\n";
+    for(auto num : retVec)
+        cout<<num<<"\t";
+
+    cout<<endl;
 
     return 0;
 }

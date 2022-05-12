@@ -6,7 +6,10 @@
 #include <list>
 #include <vector>
 #include <deque>
-
+#include <map>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "serialize_buf.h"
 
@@ -24,10 +27,17 @@ namespace Fish::rpc
 
         Serializer() = default;
 
-        bool Serialize();
+        void setBuf(const std::string &str) { buf_ = str; }
 
-        template <typename T>  //这里要是使用模板会生成一些奇怪的类型，
-        bool input(T &t)
+        void clear() { buf_.clear(); }
+
+        const std::deque<char> &buf() const
+        {
+            return buf_.buf();
+        }
+
+        template <typename T> //这里要是使用模板会生成一些奇怪的类型，
+        bool input(const T &t)
         {
             if constexpr (std::is_same_v<T, bool>)
             {
@@ -106,18 +116,18 @@ namespace Fish::rpc
             }
             return false;
         }
-        
+
         template <typename T>
         bool output(T &t)
         {
             if constexpr (std::is_same_v<T, bool>)
             {
-                t= buf_.output_int8();
+                t = buf_.output_int8();
                 return true;
             }
             else if constexpr (std::is_same_v<T, int8_t>)
             {
-                t= buf_.output_int8();
+                t = buf_.output_int8();
                 return true;
             }
             else if constexpr (std::is_same_v<T, uint8_t>)
@@ -164,7 +174,7 @@ namespace Fish::rpc
             {
                 t = buf_.output_double();
                 return true;
-            }            
+            }
             else if constexpr (std::is_same_v<T, std::string>)
             {
                 t = buf_.output_string();
@@ -172,7 +182,6 @@ namespace Fish::rpc
             }
             return false;
         }
-
 
         template <typename T>
         [[maybe_unused]] Serializer &operator>>(T &i)
@@ -196,9 +205,9 @@ namespace Fish::rpc
             for (size_t i = 0; i < size; ++i)
             {
                 T t;
-                
+
                 this->operator>>(t);
-                
+
                 v.push_back(std::move(t));
             }
             return *this;
@@ -220,11 +229,12 @@ namespace Fish::rpc
         {
             size_t size;
             output(size);
+            v.resize(size);
             for (size_t i = 0; i < size; ++i)
             {
                 T t;
                 this->operator>>(t);
-                v.push_back(std::move(t));
+                v[i] = std::move(t);
             }
             return *this;
         }
@@ -232,7 +242,8 @@ namespace Fish::rpc
         template <typename T>
         Serializer &operator<<(const std::vector<T> &v)
         {
-            input(v.size());
+            size_t size = v.size();
+            input(size);
             for (auto &t : v)
             {
                 this->operator<<(t);
@@ -264,6 +275,250 @@ namespace Fish::rpc
             }
             return *this;
         }
+
+        template <typename T>
+        Serializer &operator>>(std::set<T> &v)
+        {
+            size_t size;
+            output(size);
+
+            for (size_t i = 0; i < size; ++i)
+            {
+                T t;
+                output(t);
+                v.insert(std::move(t));
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Serializer &operator<<(const std::set<T> &v)
+        {
+            input(v.size());
+            for (auto &t : v)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Serializer &operator>>(std::multiset<T> &v)
+        {
+            size_t size;
+            output(size);
+
+            for (size_t i = 0; i < size; ++i)
+            {
+                T t;
+                output(t);
+                v.insert(std::move(t));
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Serializer &operator<<(const std::multiset<T> &v)
+        {
+            input(v.size());
+            for (auto &t : v)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Serializer &operator>>(std::unordered_set<T> &v)
+        {
+            size_t size;
+            output(size);
+
+            for (size_t i = 0; i < size; ++i)
+            {
+                T t;
+                output(t);
+                v.insert(std::move(t));
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Serializer &operator<<(const std::unordered_set<T> &v)
+        {
+            input(v.size());
+            for (auto &t : v)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Serializer &operator>>(std::unordered_multiset<T> &v)
+        {
+            size_t size;
+            output(size);
+
+            for (size_t i = 0; i < size; ++i)
+            {
+                T t;
+                output(t);
+                v.insert(std::move(t));
+            }
+            return *this;
+        }
+
+        template <typename T>
+        Serializer &operator<<(const std::unordered_multiset<T> &v)
+        {
+            input(v.size());
+            for (auto &t : v)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator<<(const std::pair<K, V> &m)
+        {
+            (*this) << m.first << m.second;
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator>>(std::pair<K, V> &m)
+        {
+            (*this) >> m.first >> m.second;
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator>>(std::map<K, V> &m)
+        {
+            size_t size;
+            output(size);
+            for (size_t i = 0; i < size; ++i)
+            {
+                std::pair<K, V> p;
+                (*this) >> p;
+                m.insert(std::move(p));
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator<<(const std::map<K, V> &m)
+        {
+            input(m.size());
+            for (auto &t : m)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator>>(std::unordered_map<K, V> &m)
+        {
+            size_t size;
+            output(size);
+            for (size_t i = 0; i < size; ++i)
+            {
+                std::pair<K, V> p;
+                (*this) >> p;
+                m.insert(std::move(p));
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator<<(const std::unordered_map<K, V> &m)
+        {
+            input(m.size());
+            for (auto &t : m)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator>>(std::multimap<K, V> &m)
+        {
+            size_t size;
+            output(size);
+            for (size_t i = 0; i < size; ++i)
+            {
+                std::pair<K, V> p;
+                (*this) >> p;
+                m.insert(std::move(p));
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator<<(const std::multimap<K, V> &m)
+        {
+            input(m.size());
+            for (auto &t : m)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator>>(std::unordered_multimap<K, V> &m)
+        {
+            size_t size;
+            output(size);
+            for (size_t i = 0; i < size; ++i)
+            {
+                std::pair<K, V> p;
+                (*this) >> p;
+                m.insert(std::move(p));
+            }
+            return *this;
+        }
+
+        template <typename K, typename V>
+        Serializer &operator<<(const std::unordered_multimap<K, V> &m)
+        {
+            input(m.size());
+            for (auto &t : m)
+            {
+                (*this) << t;
+            }
+            return *this;
+        }
+
+        template <typename... Args>
+        Serializer &operator>>(std::tuple<Args...> &t)
+        {
+
+            const auto &deserializer = [this]<typename Tuple, std::size_t... Index>(Tuple & t, std::index_sequence<Index...>)
+            {
+                (void)((*this) >> ... >> std::get<Index>(t));
+            };
+            deserializer(t, std::index_sequence_for<Args...>{});
+            return *this;
+        }
+
+        template <typename... Args>
+        Serializer &operator<<(const std::tuple<Args...> &t)
+        {
+
+            const auto &package = [this]<typename Tuple, std::size_t... Index>(const Tuple &t, std::index_sequence<Index...>)
+            {
+                (void)((*this) << ... << std::get<Index>(t));
+            };
+
+            package(t, std::index_sequence_for<Args...>{});
+            return *this;
+        }
+
     private:
         SeriBuf buf_;
     };

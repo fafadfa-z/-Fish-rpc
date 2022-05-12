@@ -14,9 +14,24 @@ namespace Fish::rpc
     public:
         SeriBuf() = default;
 
+        SeriBuf(const std::string &buf)
+            : buf_(buf.begin(),buf.end())
+        {
+        }
+
+        SeriBuf(const std::string &&buf)
+            : buf_(buf.begin(),buf.end())
+        {
+        }
+
+        void clear() { buf_.clear(); }
+
+        const std::deque<char> &buf() const { return buf_; }
+        std::string bufToStr(){return std::string(buf_.begin(),buf_.end());}
+
         void input(const void *buf, unsigned long len); //将外面的数据输入到数组里。
 
-        void output(void* buf, unsigned long len); //将数据输出到外面
+        void output(void *buf, unsigned long len); //将数据输出到外面
 
         void input_int8(int8_t);
         void input_int16(int16_t);

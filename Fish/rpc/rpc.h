@@ -6,7 +6,6 @@
 #include <deque>
 #include <map>
 #include <set>
-#include <unordered_set>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -232,6 +231,8 @@ namespace Fish::rpc
 
         using return_type = ReturnType;
 
+        using tuple_type = std::tuple<std::remove_cv_t<std::remove_reference_t<Args>>...>;
+
         template <size_t i>
         struct arg
         {
@@ -293,28 +294,26 @@ namespace Fish::rpc
     {
     public:
     
-        template<typename Function>
-        void setFun(std::string name,std::function<Function>function)//获取函数的信息.
-        {
-            typename function_traits<Function>::return_type return_temp;
-            findType(return_temp,return_type_);
+        // template<typename Function>
+        // void setFun(std::function<Function>function)//获取函数的信息.
+        // {
+        //     // typename function_traits<Function>::return_type return_temp;
+        //     // findType(return_temp,return_type_);
 
-            constexpr size_t size = function_traits<Function>::nargs;
-            arge_type_.resize(size);
+        //     static constexpr  size_t size = function_traits<std::function<Function>>::nargs;
+        //     arge_type_.resize(size);
             
-            for(int i=0;i<size;i++)
-            { 
-                typename function_traits<Function>::arg<i>::type temp;
+        //     for(size_t i=0;i<size;i++)
+        //     { 
+        //         typename function_traits<std::function<Function>>::arg<i>::type temp;
                 
-                findType(temp,arge_type_[i]);
-            }
-            function_name_ = name;
-        }
+        //         findType(temp,arge_type_[i]);
+        //     }
+        // }
 
-    private:
+    public:
         std::vector<uint8_t> return_type_;
         std::vector<std::vector<uint8_t>> arge_type_;
-        std::string function_name_;
     };
 
 }
