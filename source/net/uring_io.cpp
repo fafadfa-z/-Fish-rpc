@@ -1,5 +1,6 @@
 #include "net/uring_io.h"
 #include "net/channel.h"
+#include "net/tcp_server.h"
 
 #include <memory>
 #include <iostream>
@@ -69,11 +70,7 @@ namespace Fish
                 co_return; //以后可能会加入统计信息
             }
 
-            channel.send(view);
-
-            channel.clearBuf();
-
-            std::cout << "read socket: " << view << std::endl;
+            channel(); //回调服务器的函数
         }
     }
 
@@ -292,6 +289,9 @@ namespace Fish
         assert(iter == connections_.end());
 
         Channel::ptr newChannel = std::make_shared<Channel>(fd, this, 1024);
+
+        newChannel->setCallBack(server_->readCallBack_);
+        newChannel->setCloseCallBack(server_->closeCallBack_);
 
         connections_.insert({fd, newChannel});
 

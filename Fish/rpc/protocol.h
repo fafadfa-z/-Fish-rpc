@@ -16,9 +16,8 @@
 
 #endif
 
-namespace Fish::rpc
+namespace Fish
 {
-
 
     enum MsgType
     {
@@ -56,6 +55,13 @@ namespace Fish::rpc
                     // 5: 调用成功，返回结果的数据(带函数名称, id)、
     };
 
+    enum ProtocolProcess
+    {
+        empty,        //空的
+        need_content, //收到了完整的包头信息，还剩下具体内容
+        perfect       //收到了完整的数据
+    };
+
     class Protocol // 通信协议的封装
     {
     public:
@@ -63,19 +69,19 @@ namespace Fish::rpc
 
         Protocol() = default;
 
-        auto magic() const { return magic_; }
-        auto version() const { return version_; }
-        auto type() const { return type_; }
-        auto id() const { return id_; }
-        auto size() const { return size_; }
+        auto magic() const { return mes_.mes.magic_; }
+        auto version() const { return mes_.mes.version_; }
+        auto type() const { return mes_.mes.type_; }
+        auto id() const { return mes_.mes.id_; }
+        auto size() const { return mes_.mes.size_; }
 
         const auto &content() const { return content_; }
 
-        void setMagic(uint8_t magic) { magic_ = magic; }
-        void setVersion(uint8_t version) { version_ = version; }
-        void setType(uint16_t type) { type_ = type; }
-        void setId(uint16_t id) { id_ = id; }
-        void setSize(uint64_t size) { size_ = size; }
+        void setMagic(uint8_t magic) { mes_.mes.magic_ = magic; }
+        void setVersion(uint8_t version) { mes_.mes.version_ = version; }
+        void setType(uint16_t type) { mes_.mes.type_ = type; }
+        void setId(uint16_t id) { mes_.mes.id_ = id; }
+        void setSize(uint64_t size) { mes_.mes.size_ = size; }
 
         bool setContent(const std::string &); //设置内容
         bool setContent(const char *);
@@ -85,7 +91,16 @@ namespace Fish::rpc
 
         void calcSize(); //重新计算总长度
 
-        static ptr create(MsgType, uint16_t = 0);
+
+        std::string result();
+
+        /**
+         * @brief 将输入的数据流转化成数据包
+         * @param[in] view 输入的数据流
+         * @param[out] first 是否得到了一个完整的包
+         * @param[out] second 从输入中读取了数据的长度，这些数据需要删除
+         */
+        std::pair<bool, size_t> create(std::string_view view); //根据接收到的数据流生成协议包
 
         static ptr createHealthPacket(uint16_t = 0); //创建心跳包
 
@@ -94,21 +109,35 @@ namespace Fish::rpc
         static ptr createConsumer(uint16_t = 0); //创建注册成为Consumer的包
 
     private:
-        uint8_t magic_ = default_magic_;
-        uint8_t version_ = default_version_;
-        uint16_t type_ = 0;
-        uint16_t id_ = 0;
-        uint64_t size_ = 0;
-
         std::string content_;
 
-        bool wellFlag_ = false; //标志包是否可以发送了
+        ProtocolProcess process_ = ProtocolProcess::empty;
 
     private:
-
         inline static constexpr uint8_t default_magic_ = 0xef;
         inline static constexpr uint8_t default_version_ = 0x01;
         inline static constexpr uint8_t Base_length = 10;
         inline static constexpr uint64_t Max_size = UINT32_MAX;
+
+        
+        union headMes
+        {
+            struct alignas(4) Mes
+            {
+                uint8_t magic_ ;
+                uint8_t version_;
+                uint16_t type_;
+                uint32_t size_;
+                uint16_t id_;
+            };
+            Mes mes;
+            char mesStr[Base_length + 2]; //加2 是因为内存对齐的原因，
+        };
+
+        headMes setHeadMes(MsgType,uint16_t);
+
+        union headMes mes_;
+
+        static_assert(sizeof(headMes::Mes) == sizeof(headMes::mesStr), "size error");
     };
 }

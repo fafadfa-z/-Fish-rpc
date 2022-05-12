@@ -13,6 +13,9 @@
 
 namespace Fish
 {
+    class Channel;
+    class TcpServer;
+
     class Uring
     {
     public:
@@ -34,6 +37,9 @@ namespace Fish
         
 
         void eventLoop();
+
+
+        static void setServer(TcpServer* server){server_ = server;}
 
 
     private:
@@ -60,5 +66,8 @@ namespace Fish
         size_t queue_size_; //请求的最大数
 
         constexpr static int buf_size_ = 2048;
+
+
+        inline static TcpServer* server_;
     };
 }

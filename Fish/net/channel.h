@@ -23,26 +23,36 @@ namespace Fish
 
         int fd() const { return fd_; }
 
-        void setCallBack(std::function<bool()> cb) { cb_ = cb; }
+        void setCallBack(std::function<void(Channel::ptr)> cb) 
+        { cb_ = cb; }
+
+        void setCloseCallBack(std::function<void(int)> cb) 
+        { closeCb_ = cb; }
+
 
         auto disPtr(){return buf_.disData();}
+
         auto disView(){return buf_.disBuf();}
-        auto alreadyRead(size_t len ){buf_.already(len);}
-        void clearBuf(){ buf_.clear();}
 
-        void close();
+        auto alreadyRead(size_t len ){buf_.already(len);} //将已经读出的字节清除
 
-        void send(std::string_view);
-        void reduseSend(); 
+        void clearBuf(){ buf_.clear();}  //清空buf
+
+        void close(); //通道关闭
+
+        void send(std::string_view);  //发送数据(提交发送申请)
 
 
-        bool operator()()
+        void reduseSend();  //有发送请求完成后调用
+
+
+        void operator()()
         {
             assert(cb_);
-            return cb_();
+            cb_(shared_from_this());
         }
 
-        auto co_read()
+        auto co_read()   //由协程调用，返回awaitor
         {
             return ReadWaitor(*this);
         }
@@ -59,7 +69,8 @@ namespace Fish
         std::atomic<int> sendFlag_ = 0; // 标志当前是否有send的数据
         bool closeFlag_ = false;     //延时删除的标记位 
 
-        std::function<bool()> cb_;
+        std::function<void(Channel::ptr)> cb_;
+        std::function<void(int)> closeCb_;
 
         int fd_;
     };

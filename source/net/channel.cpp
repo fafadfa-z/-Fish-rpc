@@ -11,7 +11,13 @@ namespace Fish
     {
         std::cout << "Channel::close()" << std::endl;
         
-        if(sendFlag_>0) closeFlag_ = true;
+        if(sendFlag_>0)
+        {
+            closeFlag_ = true;
+            return;
+        }
+
+        if(closeCb_) closeCb_(fd_);
 
         uring_->removeFd(shared_from_this());
     }

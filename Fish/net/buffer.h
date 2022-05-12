@@ -11,7 +11,7 @@ namespace Fish
     class Buffer : public NonCopyable
     {
     public:
-        using BufferType = char*;
+        using BufferType = std::vector<char>;
 
         Buffer(int size);
         ~Buffer();
@@ -21,6 +21,8 @@ namespace Fish
         void input(const std::string_view);
 
         char* disData();
+
+        void output(size_t);
 
         void already(size_t len);
 
@@ -33,7 +35,7 @@ namespace Fish
     private:
         BufferType buf_;
 
-        int size_;
         int writeIndex_;
+        int readIndex_;
     };
 }

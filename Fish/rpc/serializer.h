@@ -13,11 +13,23 @@
 
 #include "serialize_buf.h"
 
-// 序号  总大小    类型
+// 序列化 目前支持标准STL容器
+// vector list deque 
+// string
+// map multimap unordered_map unordered_multimap
+// set multiset unordered_set unordered_multiset
+// pair tuple
 
-//          8 位0表示函数名, 1,2,3 表示第 1 . 2. 3  个参数
+// 支持基本数据类型：
+// int8  int16  int32  int64
+// uint8 uint16 uint32 uint64
+// float double
+// bool
 
-namespace Fish::rpc
+// 及容器-容器 和 容器-基本数据类型 的组合
+
+
+namespace Fish
 {
     // rpc 序列化/反序列化封装
     class Serializer

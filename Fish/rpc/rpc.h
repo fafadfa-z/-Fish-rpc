@@ -14,7 +14,7 @@
 
 #include <stdexcept>
 
-namespace Fish::rpc
+namespace Fish
 {
     // 类型及其id
     enum TypeId

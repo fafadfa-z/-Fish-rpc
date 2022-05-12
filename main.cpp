@@ -22,23 +22,29 @@ vector<int> fun(vector<int>vec)
     return result;
 }
 
+struct a 
+{
+    int b;
+    int c;
+};
+
+
 int main()
 {
     std::function<vector<int>(vector<int>)> f(fun);
 
-    Fish::rpc::RpcProvider s({"127.0.0.1", 8848});
+    Fish::RpcProvider s({"127.0.0.1", 8848});
 
-    
 
     s.registerMethod("fun",f);
 
     std::vector<int> vec{1,2,3,4,5};
 
-    Fish::rpc::Serializer ss;
+    Fish::Serializer ss;
 
     ss<<vec;
 
-    Fish::rpc::Serializer ret;
+    Fish::Serializer ret;
 
     s.run("fun",ss,ret);
 

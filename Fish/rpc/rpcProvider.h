@@ -9,8 +9,10 @@
 
 #include "rpc.h"
 
-namespace Fish::rpc
+namespace Fish
 {
+    class Channel;
+
     class RpcProvider : public TcpServer
     {
 
@@ -33,6 +35,9 @@ namespace Fish::rpc
             auto &fun = methods_[name];
             fun(arg, ret);
         }
+
+        void begin() override;
+
 
     private:
         template <typename Fun>
@@ -66,11 +71,14 @@ namespace Fish::rpc
             }
         }
 
+
+        void handleMessage(std::shared_ptr<Channel>);
+
+
     private:
         using MethodType = std::function<void(Serializer &, Serializer &)>;
 
         std::unordered_map<std::string, MethodType> methods_;
 
-        Serializer serializer_;
     };
 }

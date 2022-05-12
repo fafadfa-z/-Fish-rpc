@@ -11,11 +11,12 @@ namespace Fish
         : addr_(addr), name_(name),loop_("tcp servr loop")
     {
         createListenSocket();
+
+        Uring::setServer(this);
     }
 
     int TcpServer::createListenSocket()
     {
-
         listenFd_ = socket(AF_INET, SOCK_STREAM, 0);
 
         assert(listenFd_ > 0);
@@ -62,6 +63,9 @@ namespace Fish
         static constexpr size_t socklen = sizeof(const sockaddr_in);
 
         auto fd = ::accept(listenFd_, (struct sockaddr *)&clientAddr_, (socklen_t *)&socklen);
+
+        if(newCallBack_) newCallBack_(fd);
+
 
         uring_.addNewFd(fd);
     }

@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include <cassert>
 
-namespace Fish::rpc
+namespace Fish
 {
     class SeriBuf //序列化之后的buffer
     {

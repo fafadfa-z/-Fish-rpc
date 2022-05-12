@@ -2,7 +2,7 @@
 #include <string.h>
 #include <iostream>
 
-namespace Fish::rpc
+namespace Fish
 {
     void SeriBuf::input(const void *buf, unsigned long len) //将外面的数据输入到数组里。
     {
