@@ -9,6 +9,7 @@ namespace Fish
 {
     enum task_option
     {
+        invalid,
         READ,
         WRITE,
     };

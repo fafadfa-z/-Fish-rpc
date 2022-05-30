@@ -48,7 +48,7 @@ namespace Fish
         return &buf_[0];
     }
 
-    void Buffer::output(size_t len)
+    void Buffer::eraseData(size_t len)
     {
         assert(readIndex_ + (int)len <= writeIndex_);
 
@@ -81,6 +81,7 @@ namespace Fish
     void Buffer::clear()
     {
         writeIndex_ = 0;
+        readIndex_ = 0;
     }
 
 }

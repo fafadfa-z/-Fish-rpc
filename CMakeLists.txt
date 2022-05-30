@@ -5,13 +5,12 @@ project(fafadfa_template)
 
 include_directories(Fish)
 
-aux_source_directory(./ DIR_SRCS)
+
 aux_source_directory(source/base DIR_SRCS)
 aux_source_directory(source/base/log DIR_SRCS)
 aux_source_directory(source/coroutine DIR_SRCS)
 aux_source_directory(source/net DIR_SRCS)
 aux_source_directory(source/rpc DIR_SRCS)
-
 
 
 LINK_DIRECTORIES(/usr/lib)
@@ -25,5 +24,11 @@ set(TEST_MATH ${DIR_SRCS})
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -g -Wall -DDEBUG -fcoroutines")   #debug
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -O3 -DDEBUG")   #release
 
-add_executable(out.exe ${TEST_MATH})
 
+#consumer.cpp
+add_executable(provider.exe example/provider.cpp ${TEST_MATH})
+
+# #consumer.cpp
+# add_executable(registry rpc/registry.cpp acid ${LIBS})
+
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

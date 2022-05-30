@@ -34,7 +34,8 @@ namespace Fish
 
         auto disView(){return buf_.disBuf();}
 
-        auto alreadyRead(size_t len ){buf_.already(len);} //将已经读出的字节清除
+        auto eraseFront(size_t len) {buf_.eraseData(len);}
+        auto alreadyRead(size_t len ){buf_.already(len);} //由外部直接输入的数据
 
         void clearBuf(){ buf_.clear();}  //清空buf
 

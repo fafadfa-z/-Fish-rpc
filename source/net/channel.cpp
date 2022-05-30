@@ -19,6 +19,8 @@ namespace Fish
 
         if(closeCb_) closeCb_(fd_);
 
+        task_.handler.destroy();   //协程断开
+
         uring_->removeFd(shared_from_this());
     }
 

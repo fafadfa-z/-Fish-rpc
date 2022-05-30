@@ -79,7 +79,7 @@ constexpr Fish::LogLevel logLevel = Fish::LogLevel::DEBUG_;
   if constexpr(enableHttpDebug) \
   Fish::entity->logger_ ->receive(__FILE__, __LINE__, __func__)
 
-#define LOG_COUT Fish::cout
+#define LOG_COUT std::cout
 
 
 #endif

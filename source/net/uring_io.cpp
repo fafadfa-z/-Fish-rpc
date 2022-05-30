@@ -18,7 +18,7 @@ namespace Fish
 
         auto ret = io_uring_queue_init_params(queue_size, &ring_, &params);
 
-        assert(ret==0);
+        assert(ret == 0);
 
         ret = params.features & IORING_FEAT_FAST_POLL;
 
@@ -58,7 +58,7 @@ namespace Fish
 
     Task Uring::coroutineFun(Channel &channel)
     {
-        std::cout << "coroutine begin" << std::endl;
+        // std::cout << "coroutine begin" << std::endl;
 
         while (true)
         {
@@ -87,16 +87,14 @@ namespace Fish
         {
             count++;
 
-            UringRequest* flag = (UringRequest*)io_uring_cqe_get_data(cqe);
-
-            // task_option type = (task_option)quest.event_type;
+            UringRequest *flag = (UringRequest *)io_uring_cqe_get_data(cqe);
 
             task_option type = (task_option)flag->event_type;
             int fd = flag->client_socket;
-            Channel* channel = flag->channel;
+            Channel *channel = flag->channel;
 
             delete flag;
-            
+
             // int fd = quest.client_socket;
 
             if (type == READ)
@@ -108,10 +106,17 @@ namespace Fish
 
                 auto res = cqe->res;
 
+                if (res <= 0 and errno == 0)  //连接断开
+                {
+                    channel->close();
+                    freeNum_++;
+                    continue;
+                }
+
                 channel->alreadyRead(res);
                 channel->task_.handler.resume();
 
-                freeNum_--;
+                freeNum_++;
             }
 
             else if (type == WRITE)
@@ -124,7 +129,7 @@ namespace Fish
 
                 channel->reduseSend();
 
-                freeNum_--;
+                freeNum_++;
             }
         }
 
@@ -175,11 +180,11 @@ namespace Fish
 
             assert(iter != connections_.end());
 
-            auto& channel = iter->second;
+            auto &channel = iter->second;
 
-            assert(channel->fd()==fd);
+            assert(channel->fd() == fd);
 
-            UringRequest* flag = new UringRequest;
+            UringRequest *flag = new UringRequest;
 
             flag->event_type = READ;
             flag->client_socket = fd;
@@ -233,14 +238,13 @@ namespace Fish
             auto iter = connections_.find(fd);
             assert(iter != connections_.end());
 
-            Channel & channel = *(iter->second).get();
-        
-            UringRequest* flag = new UringRequest;
+            Channel &channel = *(iter->second).get();
+
+            UringRequest *flag = new UringRequest;
 
             flag->event_type = WRITE;
             flag->client_socket = fd;
             flag->channel = &channel;
-
 
             io_uring_prep_send(sqe, fd, ptr, len, 0);
 

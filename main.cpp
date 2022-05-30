@@ -36,27 +36,30 @@ int main()
     Fish::RpcProvider s({"127.0.0.1", 8848});
 
 
-    s.registerMethod("fun",f);
+    s.begin();
 
-    std::vector<int> vec{1,2,3,4,5};
 
-    Fish::Serializer ss;
+    // s.registerMethod("fun",f);
 
-    ss<<vec;
+    // std::vector<int> vec{1,2,3,4,5};
 
-    Fish::Serializer ret;
+    // Fish::Serializer ss;
 
-    s.run("fun",ss,ret);
+    // ss<<vec;
 
-    std::vector<int> retVec;
+    // Fish::Serializer ret;
 
-    ret>>retVec;
+    // s.run("fun",ss,ret);
 
-    cout<<"now output answer:\n";
-    for(auto num : retVec)
-        cout<<num<<"\t";
+    // std::vector<int> retVec;
 
-    cout<<endl;
+    // ret>>retVec;
+
+    // cout<<"now output answer:\n";
+    // for(auto num : retVec)
+    //     cout<<num<<"\t";
+
+    // cout<<endl;
 
     return 0;
 }

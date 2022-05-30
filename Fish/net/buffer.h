@@ -22,9 +22,9 @@ namespace Fish
 
         char* disData();
 
-        void output(size_t);
+        void eraseData(size_t);   //从前面删除元素
 
-        void already(size_t len);
+        void already(size_t len); //标记由外部插入了元素
 
         const std::string_view disBuf() const;
 

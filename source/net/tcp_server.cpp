@@ -5,6 +5,8 @@
 #include <cassert>
 #include <string.h>
 
+#include "base/log/logger.h"
+
 namespace Fish
 {
     TcpServer::TcpServer(TcpAddr addr, std::string name)
@@ -43,6 +45,8 @@ namespace Fish
     {
         // 这里应该加一些检查
 
+        LOG_COUT<<name_<<" begin listen...."<<std::endl;
+
         assert(listenFd_ != -1);
 
         listen(listenFd_, 64);
@@ -51,21 +55,20 @@ namespace Fish
 
         loop_.setTask([this]{listen_in_loop();});
 
-        auto thread = loop_.beginInNewThread();
-
-        thread.detach();
+        loop_.beginInCurrentThread();
     }
 
     void TcpServer::listen_in_loop()  //监听、接收新连接
     {
         clientAddr_ = {0};
 
-        static constexpr size_t socklen = sizeof(const sockaddr_in);
+        socklen_t socklen = sizeof(clientAddr_);
 
-        auto fd = ::accept(listenFd_, (struct sockaddr *)&clientAddr_, (socklen_t *)&socklen);
+        auto fd = ::accept(listenFd_, (struct sockaddr *)&clientAddr_,&socklen);
+
+        assert(fd>0);
 
         if(newCallBack_) newCallBack_(fd);
-
 
         uring_.addNewFd(fd);
     }

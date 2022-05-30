@@ -91,6 +91,7 @@ namespace Fish
 
         void calcSize(); //重新计算总长度
 
+        ProtocolProcess process() const {return process_;}
 
         std::string result();
 
@@ -107,6 +108,10 @@ namespace Fish
         static ptr createProvider(uint16_t = 0); //创建注册成为Provider的包
 
         static ptr createConsumer(uint16_t = 0); //创建注册成为Consumer的包
+
+
+        void printMes(); //输出所有包内容，用于调试。
+
 
     private:
         std::string content_;

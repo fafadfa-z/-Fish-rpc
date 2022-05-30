@@ -3,6 +3,7 @@
 #include <cassert>
 #include <stdexcept>
 #include <algorithm>
+#include <iostream>
 #include <chrono>
 
 namespace Fish
@@ -186,11 +187,27 @@ namespace Fish
 
         result.resize(Base_length);
 
-        std::copy(mes_.mesStr, mes_.mesStr + Base_length,&result[0]);
+        std::copy(mes_.mesStr, mes_.mesStr + Base_length, &result[0]);
 
         result += content_;
 
         return result;
+    }
+
+    void Protocol::printMes()
+    {
+        std::cout << "--------------packet mes--------------" << std::endl;
+        std::cout << "magic: " << (int)mes_.mes.magic_ << std::endl;
+
+        std::cout << "version: " << (int)mes_.mes.version_ << std::endl;
+
+        std::cout << "type: " << (int)mes_.mes.type_ << std::endl;
+
+        std::cout << "size: " << (int)mes_.mes.size_ << std::endl;
+
+        std::cout << "id: " << (int)mes_.mes.id_ << std::endl;
+
+        std::cout << "content: " << content_ << std::endl;
     }
 
 }
