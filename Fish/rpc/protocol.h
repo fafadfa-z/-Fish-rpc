@@ -24,8 +24,8 @@ namespace Fish
         Rpc_None, //无意义的包
 
         Rpc_Health, // 心跳包
-                    // 0: 心跳包发送
-                    // 1: 心跳包回应
+                    // 1: 心跳包发送
+                    // 2: 心跳包回应
 
         Rpc_Provider, // 向服务中心注册为 provider
                       // 1: 注册成为provider

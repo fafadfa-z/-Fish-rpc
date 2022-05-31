@@ -1,10 +1,7 @@
 #include <iostream>
-#include "rpc/rpcProvider.h"
+#include "rpc/rpc_provider.h"
 
 using namespace std;
-
-
-
 
 
 
@@ -16,12 +13,13 @@ int main()
 
     s.begin();
 
+    while(1)
+    {
+        std::this_thread::sleep_for(1s);
+    }
+
+
 
     return 0;
 }
-
-
-
-
-
 

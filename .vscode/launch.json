@@ -8,7 +8,7 @@
             "name": "模板编译器",
             "type": "cppdbg",                                //对于c/c++ 这个地方只能是这个
             "request": "launch",                             // 可以为launch（启动）或attach（附加）
-            "program": "${workspaceFolder}/build/out.exe",
+            "program": "${workspaceFolder}/bin/provider.exe",
             "args": [],
             "stopAtEntry": false,                            // 设为true时程序将暂停在程序入口处，相当于在main上打断点
             "cwd": "${fileDirname}",                         // 调试程序时的工作目录，此为工作区文件夹；改成${fileDirname}可变为文件所在目录

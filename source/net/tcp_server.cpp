@@ -10,7 +10,7 @@
 namespace Fish
 {
     TcpServer::TcpServer(TcpAddr addr, std::string name)
-        : addr_(addr), name_(name),loop_("tcp servr loop")
+        : addr_(addr), name_(name), loop_("tcp servr loop")
     {
         createListenSocket();
 
@@ -45,7 +45,7 @@ namespace Fish
     {
         // 这里应该加一些检查
 
-        LOG_COUT<<name_<<" begin listen...."<<std::endl;
+        LOG_COUT << name_ << " begin listen...." << std::endl;
 
         assert(listenFd_ != -1);
 
@@ -53,24 +53,50 @@ namespace Fish
 
         uring_.beginLoop();
 
-        loop_.setTask([this]{listen_in_loop();});
+        loop_.setTask([this]
+                      { listen_in_loop(); });
 
-        loop_.beginInCurrentThread();
+        auto th = loop_.beginInNewThread();
+
+        th.detach();
     }
 
-    void TcpServer::listen_in_loop()  //监听、接收新连接
+    void TcpServer::listen_in_loop() //监听、接收新连接
     {
         clientAddr_ = {0};
 
         socklen_t socklen = sizeof(clientAddr_);
 
-        auto fd = ::accept(listenFd_, (struct sockaddr *)&clientAddr_,&socklen);
+        auto fd = ::accept(listenFd_, (struct sockaddr *)&clientAddr_, &socklen);
 
-        assert(fd>0);
+        assert(fd > 0);
 
-        if(newCallBack_) newCallBack_(fd);
+        if (newCallBack_)
+            newCallBack_(fd);
 
         uring_.addNewFd(fd);
+    }
+
+    void TcpServer::createConnection(const TcpAddr& addr)
+    {
+        int fd = socket(AF_INET, SOCK_STREAM, 0);
+
+        assert(fd > 0);
+
+        struct sockaddr_in fd_addr = {0};
+
+        fd_addr.sin_family = AF_INET;
+        fd_addr.sin_port = htons(addr.port());
+        inet_pton(AF_INET,addr.ip().c_str(),&fd_addr.sin_addr);
+
+        auto ret = connect(fd, (struct sockaddr *)&fd_addr, sizeof(fd_addr));
+
+        assert(ret >=0);
+
+        auto channel = uring_.addNewFd(fd);
+
+        if(beginCallBack_) beginCallBack_(channel);
+
     }
 
     void TcpServer::stop()
@@ -80,7 +106,6 @@ namespace Fish
 
     TcpServer::~TcpServer()
     {
-        
     }
 
 }

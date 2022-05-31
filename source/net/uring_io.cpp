@@ -8,6 +8,8 @@
 #include <assert.h>
 #include <string_view>
 
+    using namespace std;
+
 namespace Fish
 {
     Uring::Uring(int queue_size)
@@ -127,9 +129,13 @@ namespace Fish
 
                 auto channel = iter->second;
 
+                channel->clearSendBuf();
+
                 channel->reduseSend();
 
                 freeNum_++;
+
+                 cout<<"---------------------"<<endl;
             }
         }
 
@@ -199,9 +205,11 @@ namespace Fish
         }
     }
 
+
     void Uring::beginSend()
     {
-        std::queue<std::tuple<int, const void *, int>> tempSend;
+        // cout<<"---------------------"<<endl;
+        std::queue<std::tuple<int, const char *, int>> tempSend;
         {
             MutexType::guard guard(sendQueMut_);
 
@@ -219,6 +227,7 @@ namespace Fish
             {
                 for (size_t i = 0; i < freeNum_; i++)
                 {
+
                     tempSend.push(sendQue_.front());
                     sendQue_.pop();
                 }
@@ -240,6 +249,8 @@ namespace Fish
 
             Channel &channel = *(iter->second).get();
 
+            cout<<"+++++++++++++++++++"<<endl;
+
             UringRequest *flag = new UringRequest;
 
             flag->event_type = WRITE;
@@ -252,7 +263,7 @@ namespace Fish
         }
     }
 
-    int Uring::addWriteRequest(int fd, const void *buf, int size)
+    int Uring::addWriteRequest(int fd, const char *buf, int size)
     {
         MutexType::guard guard(sendQueMut_);
 
@@ -286,7 +297,7 @@ namespace Fish
         ::close(fd);
     }
 
-    void Uring::addNewFd(int fd)
+    Channel::ptr Uring::addNewFd(int fd)
     {
         auto iter = connections_.find(fd);
 
@@ -300,6 +311,8 @@ namespace Fish
         connections_.insert({fd, newChannel});
 
         newChannel->task_ = coroutineFun(*newChannel); //开启协程;
+
+        return newChannel;
     }
 
 }

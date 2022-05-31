@@ -38,14 +38,13 @@ namespace Fish
         auto alreadyRead(size_t len ){buf_.already(len);} //由外部直接输入的数据
 
         void clearBuf(){ buf_.clear();}  //清空buf
+        void clearSendBuf(){ sendBuf_.clear();}  //清空发送buf
 
         void close(); //通道关闭
 
         void send(std::string_view);  //发送数据(提交发送申请)
 
-
         void reduseSend();  //有发送请求完成后调用
-
 
         void operator()()
         {
@@ -63,6 +62,8 @@ namespace Fish
     public:
         Task task_;
         Buffer buf_;
+        Buffer sendBuf_;
+
         Uring* uring_;
     
     private:

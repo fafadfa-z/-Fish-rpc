@@ -3,7 +3,7 @@
 namespace Fish
 {
     Channel::Channel(int fd, Uring* uring,int bufSize)
-        : buf_(bufSize),uring_(uring), fd_(fd)
+        :buf_(bufSize),sendBuf_(bufSize),uring_(uring), fd_(fd)
     {
     }
 
@@ -31,7 +31,11 @@ namespace Fish
 
         assert(uring_ != nullptr);
 
-        uring_->addWriteRequest(fd_,view.data(),view.size());
+        sendBuf_.input(view);
+
+        auto buf_view = sendBuf_.disBuf();
+
+        uring_->addWriteRequest(fd_,buf_view.data(),buf_view.size());
         
         sendFlag_++;
     }

@@ -27,13 +27,13 @@ namespace Fish
 
         void beginLoop();
 
-        int addWriteRequest(int fd, const void *, int size);
+        int addWriteRequest(int fd, const char *, int size);
 
         int addReadRequest(int fd);
 
         void removeFd(std::shared_ptr<Channel>);
 
-        void addNewFd(int fd);
+        [[maybe_unused]]std::shared_ptr<Channel> addNewFd(int fd);
         
 
         void eventLoop();
@@ -46,7 +46,7 @@ namespace Fish
         std::queue<int> recvQue_; //储存待发送的文件描述符
         MutexType recvQueMut_;
 
-        std::queue<std::tuple<int,const void*,int>> sendQue_; //储存发送的文件描述符
+        std::queue<std::tuple<int,const char*,int>> sendQue_; //储存发送的文件描述符
         MutexType sendQueMut_;
 
     private:

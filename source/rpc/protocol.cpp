@@ -84,6 +84,8 @@ namespace Fish
 
         size_t index;
 
+        size_t eraseSize = 0;  //储存一共读取的字节数
+
         switch (process_)
         {
         case ProtocolProcess::empty:
@@ -94,6 +96,7 @@ namespace Fish
                 return {false, view.size()};
 
             view = view.substr(index);
+            eraseSize += index;
 
             if (view.size() < Base_length)
             {
@@ -110,13 +113,14 @@ namespace Fish
             }
 
             view = view.substr(Base_length);
+            eraseSize += Base_length;
 
         case ProtocolProcess::need_content:
-            if (content_.size() + view.size() < mes_.mes.size_)
+            if (content_.size() + view.size() < mes_.mes.size_ - Base_length)
             {
                 content_ += view;
 
-                return {false, view.size()};
+                return {false, view.size() + eraseSize};
             }
 
             view = view.substr(0, mes_.mes.size_ - content_.size());
@@ -125,7 +129,7 @@ namespace Fish
 
             process_ = ProtocolProcess::perfect;
 
-            return {true, view.size()};
+            return {true, view.size() + eraseSize};
 
         case ProtocolProcess::perfect:
 

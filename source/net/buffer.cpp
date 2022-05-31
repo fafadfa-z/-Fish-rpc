@@ -40,7 +40,7 @@ namespace Fish
 
     const std::string_view Buffer::disBuf() const
     {
-        return std::string_view(&buf_[0], writeIndex_);
+        return std::string_view(&buf_[readIndex_], writeIndex_ - readIndex_);
     }
 
     char *Buffer::disData()
