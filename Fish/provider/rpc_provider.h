@@ -3,15 +3,15 @@
 #include <memory>
 #include "base/sync/mutex.h"
 #include "net/tcp_server.h"
-#include "serializer.h"
+
+#include "rpc/rpc.h"
+#include "rpc/serializer.h"
 #include "rpc/protocol.h"
+#include "rpc/protocol_factory.h"
 
 #include <unordered_map>
 #include <functional>
-#include <shared_mutex>
 
-
-#include "rpc.h"
 
 namespace Fish
 {
@@ -80,17 +80,15 @@ namespace Fish
         void handleClose(int);  //处理断开的连接
         void handleNew(int);    //处理新连接 
 
-        void handleMessage(Protocol::ptr&);  //处理数据包
-
-
     private:
         using MethodType = std::function<void(Serializer &, Serializer &)>;
 
         //储存可调用方法的哈希表
         std::unordered_map<std::string, MethodType> methods_; 
 
-        //储存只接收了部分消息的数据
-        std::map<int, Protocol::ptr> undoProtols_;
-        std::shared_mutex protocalMut_;
+
+        ProtocolFactory protocols_;
+
+
     };
 }

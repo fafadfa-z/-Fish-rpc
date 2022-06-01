@@ -193,21 +193,14 @@ namespace Fish
 
         working_ = true;
 
-        long used = 0; // 矫正时钟，记录每次使用了多长时间。
-
-        long timeBegin = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+        long timeBegin = 0;
+        long timeEnd = 0;
 
         while (working_)
         {
-            delay_ms(1000 / timeNum_ - used);
-
-            long pre = timeBegin;
+            delay_ms(1000 / timeNum_ - (timeEnd - timeBegin));
 
             timeBegin = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-
-            used = timeBegin - pre - 10; //计算上次运行了多长时间，用来校准定时器
-
-            used = std::max(used, 0l);
 
             std::vector<TimerTask *> timeOutVec;
             timeOutVec.reserve(5);
@@ -243,6 +236,8 @@ namespace Fish
 
             if (wheelIndex_ == timeNum_)
                 wheelIndex_ = 0;
+
+            timeEnd = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
         }
     }
 }

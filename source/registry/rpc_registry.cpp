@@ -26,6 +26,12 @@ namespace Fish
 
     void RpcRegistry::handleMessage(Channel::ptr channel)
     {
+        
+
+
+
+
+
     }
 
 
