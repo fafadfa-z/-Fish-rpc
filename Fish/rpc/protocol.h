@@ -10,9 +10,9 @@
 
     通信协议
 
-    名称        magic    size  version   type   id
+    名称        magic   version   type   size   id  host 
 
-    大小(字节)    1       4       1        2     2
+    大小(字节)    1        1       2       4     2   2
 
 #endif
 
@@ -103,11 +103,17 @@ namespace Fish
          */
         std::pair<bool, size_t> create(std::string_view view); //根据接收到的数据流生成协议包
 
-        static ptr createHealthPacket(uint16_t = 0); //创建心跳包
 
-        static ptr createProvider(uint16_t = 0); //创建注册成为Provider的包
+        
+        /**
+         * @host 本机id           
+         * @id   协议类型
+        **/
+        static ptr createHealthPacket(uint16_t host, uint16_t id = 0); //创建心跳包
 
-        static ptr createConsumer(uint16_t = 0); //创建注册成为Consumer的包
+        static ptr createProvider(uint16_t host, uint16_t = 0); //创建注册成为Provider的包
+
+        static ptr createConsumer(uint16_t host, uint16_t = 0); //创建注册成为Consumer的包
 
 
         void printMes(); //输出所有包内容，用于调试。
@@ -121,7 +127,7 @@ namespace Fish
     private:
         inline static constexpr uint8_t default_magic_ = 0xef;
         inline static constexpr uint8_t default_version_ = 0x01;
-        inline static constexpr uint8_t Base_length = 10;
+        inline static constexpr uint8_t Base_length = 12;
         inline static constexpr uint64_t Max_size = UINT32_MAX;
 
         
@@ -134,12 +140,13 @@ namespace Fish
                 uint16_t type_;
                 uint32_t size_;
                 uint16_t id_;
+                uint16_t host_;
             };
             Mes mes;
-            char mesStr[Base_length + 2]; //加2 是因为内存对齐的原因，
+            char mesStr[Base_length]; 
         };
 
-        headMes setHeadMes(MsgType,uint16_t);
+        headMes setHeadMes(MsgType,uint16_t, uint16_t);
 
         union headMes mes_;
 

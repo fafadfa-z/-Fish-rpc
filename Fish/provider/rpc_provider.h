@@ -7,7 +7,7 @@
 #include "rpc/rpc.h"
 #include "rpc/serializer.h"
 #include "rpc/protocol.h"
-#include "rpc/protocol_factory.h"
+#include "rpc/protocol_manager.h"
 
 #include <unordered_map>
 #include <functional>
@@ -81,13 +81,20 @@ namespace Fish
         void handleNew(int);    //处理新连接 
 
     private:
-        using MethodType = std::function<void(Serializer &, Serializer &)>;
 
+        void hanleHealth(Protocol::ptr&,std::shared_ptr<Channel>);  //处理心跳检测
+        void refreshHealth(int);
+        
+
+
+        uint16_t id_;    // 由 registry 指定的设备id
+
+    private:
+        using MethodType = std::function<void(Serializer &, Serializer &)>;
         //储存可调用方法的哈希表
         std::unordered_map<std::string, MethodType> methods_; 
 
-
-        ProtocolFactory protocols_;
+        ProtocolManager protocols_;
 
 
     };

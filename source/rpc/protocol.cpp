@@ -8,7 +8,7 @@
 
 namespace Fish
 {
-    std::string getTime()
+    std::string getTimeToString()
     {
         using namespace std::chrono;
 
@@ -139,41 +139,42 @@ namespace Fish
         return {false, 0};
     }
 
-    Protocol::ptr Protocol::createHealthPacket(uint16_t id) //创建心跳包
+    
+    Protocol::ptr Protocol::createHealthPacket(uint16_t host, uint16_t id) //创建心跳包
     {
         ptr result = std::make_shared<Protocol>();
 
-        result->mes_ = result->setHeadMes(MsgType::Rpc_Health, id);
-        result->content_ = getTime();
+        result->mes_ = result->setHeadMes(MsgType::Rpc_Health,host, id);
+        result->content_ = getTimeToString();
 
         result->calcSize();
         return result;
     }
 
-    Protocol::ptr Protocol::createProvider(uint16_t id) //创建注册成为Provider的包
+    Protocol::ptr Protocol::createProvider(uint16_t host, uint16_t id) //创建注册成为Provider的包
     {
         ptr result = std::make_shared<Protocol>();
 
-        result->mes_ = result->setHeadMes(MsgType::Rpc_Provider, id);
-        result->content_ = getTime();
+        result->mes_ = result->setHeadMes(MsgType::Rpc_Provider,host, id);
+        result->content_ = getTimeToString();
 
         result->calcSize();
         return result;
     }
 
-    Protocol::ptr Protocol::createConsumer(uint16_t id) //创建注册成为Consumer的包
+    Protocol::ptr Protocol::createConsumer(uint16_t host, uint16_t id) //创建注册成为Consumer的包
     {
         ptr result = std::make_shared<Protocol>();
 
-        result->mes_ = result->setHeadMes(MsgType::Rpc_Consumer, id);
+        result->mes_ = result->setHeadMes(MsgType::Rpc_Consumer,host, id);
 
-        result->content_ = getTime();
+        result->content_ = getTimeToString();
 
         result->calcSize();
         return result;
     }
 
-    Protocol::headMes Protocol::setHeadMes(MsgType type, uint16_t id)
+    Protocol::headMes Protocol::setHeadMes(MsgType type, uint16_t host, uint16_t id)
     {
         headMes result;
 
@@ -181,6 +182,7 @@ namespace Fish
         result.mes.version_ = default_version_;
         result.mes.type_ = type;
         result.mes.id_ = id;
+        result.mes.host_ = host;
 
         return result;
     }

@@ -18,6 +18,7 @@ namespace Fish
 {
     class Uring;
     class Channel;
+    class Timer;
 
     class TcpServer : public NonCopyable
     {
@@ -42,11 +43,11 @@ namespace Fish
         void setNewCallBack(std::function<void(int)> cb){newCallBack_ = cb;}
 
         void setBeginCallBack(CallBackFun cb){beginCallBack_ = cb;}
+        void setName(std::string name) { name_ = name; }
+        void setTimer(Timer* timer){timer_ = timer;}
+
 
         const std::string &name() const { return name_; }
-
-        void setName(std::string name) { name_ = name; }
-
     protected:
         int createListenSocket();
 
@@ -54,6 +55,9 @@ namespace Fish
 
         sockaddr_in clientAddr_ = {0};
         TcpAddr addr_;
+
+        Timer * timer_;
+
 
     private:
         CallBackFun readCallBack_;   //收到信息回调

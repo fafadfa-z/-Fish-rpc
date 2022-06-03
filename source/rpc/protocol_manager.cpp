@@ -1,11 +1,11 @@
-#include "rpc/protocol_factory.h"
+#include "rpc/protocol_manager.h"
 #include "net/channel.h"
 
 #include <mutex>
 
 namespace Fish
 {
-    Protocol::ptr ProtocolFactory::readMes(std::shared_ptr<Channel>& channel)
+    Protocol::ptr ProtocolManager::readMes(std::shared_ptr<Channel>& channel)
     {
 
         auto view = channel->disView();

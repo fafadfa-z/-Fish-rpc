@@ -7,6 +7,7 @@
 #include "net/tcp_addr.h"
 
 #include "net/tcp_server.h"
+#include "rpc/protocol_manager.h"
 
 namespace Fish
 {
@@ -34,10 +35,16 @@ namespace Fish
 
         const std::string &name() { return name_; }
 
-    private:
 
+    private:
         
-    
+        uint16_t id_;    // 由 registry 指定的设备id
+
+        std::unordered_map<uint16_t,ProviderMes> providersMap_;
+
+    private:
+        
+        ProtocolManager protocols_;
     
         std::string name_;
     };

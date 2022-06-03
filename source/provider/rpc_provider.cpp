@@ -1,9 +1,10 @@
 #include "provider/rpc_provider.h"
 
-
 #include <mutex>
+#include <optional>
 
 #include "base/log/logger.h"
+#include "net/channel.h"
 
 namespace Fish
 {
@@ -14,7 +15,7 @@ namespace Fish
 
    void RpcProvider::begin()
    {
-      TcpServer::setReadCallBack([this](std::shared_ptr<Channel> channel)
+      TcpServer::setReadCallBack([this](Channel::ptr channel)
                                  { handleRead(channel); });
 
       TcpServer::setCloseCallBack([this](int fd)
@@ -27,7 +28,7 @@ namespace Fish
    }
 
 
-   void RpcProvider::handleRead(std::shared_ptr<Channel> channel)
+   void RpcProvider::handleRead(Channel::ptr channel)
    {
       auto protocol = protocols_.readMes(channel);
 
@@ -44,6 +45,7 @@ namespace Fish
             break;
 
          case MsgType::Rpc_Health:
+            hanleHealth(protocol, channel);
 
          break;
          case MsgType::Rpc_Provider:
@@ -58,23 +60,57 @@ namespace Fish
 
          break;
       };
+   }
 
 
+   void RpcProvider::hanleHealth(Protocol::ptr& protocol, Channel::ptr channel)
+   {
+      assert(protocol->process() == ProtocolProcess::perfect);
+
+      LOG_INFO<<TcpServer::name()<<" Handle health detection"<<Fish::end;
+
+      std::optional<Protocol::ptr> responce;
+
+      switch(protocol->id())
+      {
+         case 1: //心跳包发送
+            responce = Protocol::createHealthPacket(id_, 2);
+
+            refreshHealth(channel->fd());  //更新心跳信息(需要之后完成)
+
+         break;
+         case 2: //心跳包回应（理论上收不到这个包）
+
+
+         default:
+            LOG_DEBUG<<TcpServer::name()<<" unexpected health type..."<<Fish::end;
+         break;
+      };
+
+      auto result = protocol->result();
+
+      if(responce) channel->send(result);
    }
 
 
 
    void RpcProvider::handleClose(int fd)
    {
-      cout << "rpc provider close: " << fd << endl;
+      // cout << "rpc provider close: " << fd << endl;
 
-      // channel->send(view);
    }
    void RpcProvider::handleNew(int fd)
    {
-      cout << "rpc provider new: " << fd << endl;
+      // cout << "rpc provider new: " << fd << endl;
 
-      // channel->send(view);
+   }
+
+   void RpcProvider::refreshHealth(int fd)
+   {
+
+
+
+
    }
 
 }

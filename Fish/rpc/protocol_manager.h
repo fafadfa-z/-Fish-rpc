@@ -10,7 +10,7 @@ namespace Fish
 {   
     class Channel;
 
-    class ProtocolFactory
+    class ProtocolManager
     {
     public:
         Protocol::ptr readMes(std::shared_ptr<Channel>&); //从channel 中读取数据

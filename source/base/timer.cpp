@@ -37,6 +37,8 @@ namespace Fish
         auto timeDur = duration_cast<milliseconds>(now).count();
 
         task_(timeDur - insertTime_);
+
+        insertTime_ = timeDur;
     }
 
     Timmer *Timmer::init(int time)
