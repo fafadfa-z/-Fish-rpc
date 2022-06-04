@@ -1,5 +1,4 @@
-#ifndef _TIMMRE_H
-#define _TIMMER_H
+#pragma once 
 
 #include <functional>
 #include <vector>
@@ -70,18 +69,20 @@ namespace Fish
 
 
     // 定时器类，分辨率为10ms
-    class Timmer
+    class Timer
     {
     public:
         using timeDuration = std::chrono::duration<int, std::milli>;
 
-        static Timmer* init(int);
+        static Timer* init(int);
 
-        Timmer(const Timmer &another) = delete;
+        static int64_t getNow_Milli();  //获取以毫秒为单位的时间点
 
-        Timmer &operator=(const Timmer &another) = delete;
+        Timer(const Timer &another) = delete;
 
-        ~Timmer();
+        Timer &operator=(const Timer &another) = delete;
+
+        ~Timer();
 
         void start();
 
@@ -95,7 +96,7 @@ namespace Fish
 
     private:
 
-        Timmer(int);
+        Timer(int);
 
         const int timeNum_;
 
@@ -111,8 +112,7 @@ namespace Fish
 
         bool working_;
 
-        inline static Timmer* entity_ = nullptr;
+        inline static Timer* entity_ = nullptr;
     };
 }
 
-#endif

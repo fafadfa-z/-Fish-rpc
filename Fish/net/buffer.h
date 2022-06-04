@@ -20,15 +20,16 @@ namespace Fish
         void input(char *buf, size_t len);
         void input(const std::string_view);
 
-        char* disData();
 
         void eraseData(size_t);   //从前面删除元素
-
         void already(size_t len); //标记由外部插入了元素
 
-        const std::string_view disBuf() const;
+        //返回可读取的数据
+        const std::string_view disRead() const;  
 
-        const size_t freeSize() const;
+        //返回空闲的，可以被写入的数据
+        const std::string_view disWrite() const;
+
 
         void clear();
 

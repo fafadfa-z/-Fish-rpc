@@ -63,7 +63,6 @@ namespace Fish
         CallBackFun readCallBack_;   //收到信息回调
         std::function<void(int)> closeCallBack_; // 连接断开回调
         std::function<void(int)> newCallBack_; //新连接到来回调
-
         CallBackFun beginCallBack_;  // 发起连接后回调
 
         int listenFd_ = -1;

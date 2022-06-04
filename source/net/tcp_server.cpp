@@ -5,6 +5,7 @@
 #include <cassert>
 #include <string.h>
 
+#include "net/channel.h"
 #include "base/log/logger.h"
 
 namespace Fish
@@ -74,7 +75,11 @@ namespace Fish
         if (newCallBack_)
             newCallBack_(fd);
 
-        uring_.addNewFd(fd);
+        auto channel = uring_.addNewFd(fd);
+
+        TcpAddr addr(clientAddr_);
+        channel->setAddr(addr);
+
     }
 
     void TcpServer::createConnection(const TcpAddr& addr)

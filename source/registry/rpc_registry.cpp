@@ -1,8 +1,9 @@
 #include "registry/rpc_registry.h"
-#include "net/channel.h"
 
-#include "rpc/protocol.h"
+#include "net/channel.h"
 #include "base/log/logger.h"
+
+#include "base/timer.h"
 
 namespace Fish
 {
@@ -13,11 +14,13 @@ namespace Fish
 
     void RpcRegistry::begin()
     {
+        TcpServer::setTimer(Timer::init(100));
+
         TcpServer::setReadCallBack([this](Channel::ptr channel)
                                    { handleMessage(channel); });
 
         // TcpServer::setBeginCallBack([this](Channel::ptr channel)
-                                    // { sendMes(channel); });
+        // { sendMes(channel); });
 
         TcpServer::begin();
 
@@ -38,7 +41,7 @@ namespace Fish
         switch (type)
         {
         case MsgType::Rpc_None:
-            LOG_FATAL << "不应该出现的情况..." << Fish::end;
+            LOG_DEBUG << "不应该出现的情况..." << Fish::end;
             break;
 
         case MsgType::Rpc_Health:
@@ -46,6 +49,7 @@ namespace Fish
 
             break;
         case MsgType::Rpc_Provider:
+            handleProvider(protocol, channel);
 
             break;
         case MsgType::Rpc_Consumer:
@@ -57,15 +61,56 @@ namespace Fish
         };
     }
 
-    void RpcRegistry::sendMes(Channel::ptr channel)
+    void RpcRegistry::handleProvider(Protocol::ptr &protocol, Channel::ptr &channel)
     {
-        auto protocol = Protocol::createHealthPacket(1);
+        assert(protocol->type() == MsgType::Rpc_Provider);
 
-        protocol->printMes();
+        switch (protocol->id())
+        {
+        case 1: //注册成为provider
 
-        auto mes = protocol->result();
+            providerNew(protocol, channel);
 
-        channel->send({mes.c_str(), mes.size()});
+            break;
+        };
     }
+
+    void RpcRegistry::providerNew(Protocol::ptr &protocol, Channel::ptr &channel)
+    {
+
+        auto now = Timer::getNow_Milli();
+        ProviderMes mes;
+
+        mes.addr = channel->addr();
+        mes.status = ProviderStatus::health;
+        mes.lastHeart_send = now;
+        mes.lastHeart_send = now;
+        mes.channel = channel;
+        
+        {
+            LockGuard<Mutex> guard(providers_mut_);
+            mes.id = providers_.size();
+            providers_.push_back(std::move(mes));
+        }
+
+        // TcpServer::timer_->addPriodTask();
+    }
+
+    void RpcRegistry::healthDetection(uint16_t id)
+    {
+
+
+    }
+
+    // void RpcRegistry::sendMes(Channel::ptr channel)
+    // {
+    //     auto protocol = Protocol::createHealthPacket(1);
+
+    //     protocol->printMes();
+
+    //     auto mes = protocol->result();
+
+    //     channel->send({mes.c_str(), mes.size()});
+    // }
 
 }

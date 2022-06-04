@@ -3,7 +3,7 @@
 namespace Fish
 {
     Channel::Channel(int fd, Uring* uring,int bufSize)
-        :buf_(bufSize),sendBuf_(bufSize),uring_(uring), fd_(fd)
+        :readBuf_(bufSize),sendBuf_(bufSize),uring_(uring), fd_(fd)
     {
     }
 
@@ -19,7 +19,7 @@ namespace Fish
 
         if(closeCb_) closeCb_(fd_);
 
-        task_.handler.destroy();   //协程断开
+        task_.handler.destroy();   //协程销毁
 
         uring_->removeFd(shared_from_this());
     }
@@ -33,7 +33,7 @@ namespace Fish
 
         sendBuf_.input(view);
 
-        auto buf_view = sendBuf_.disBuf();
+        auto buf_view = sendBuf_.disRead(); 
 
         uring_->addWriteRequest(fd_,buf_view.data(),buf_view.size());
         

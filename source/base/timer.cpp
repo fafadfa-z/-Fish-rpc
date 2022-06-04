@@ -2,8 +2,6 @@
 #include <thread>
 #include <chrono>
 
-#include <iostream>
-
 namespace Fish
 {
     using namespace std::chrono;
@@ -41,15 +39,19 @@ namespace Fish
         insertTime_ = timeDur;
     }
 
-    Timmer *Timmer::init(int time)
+    Timer *Timer::init(int time)
     {
         if (entity_ == nullptr)
-            entity_ = new Timmer(time);
+            entity_ = new Timer(time);
 
         return entity_;
     }
+    int64_t Timer::getNow_Milli()
+    {
+        return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    }
 
-    Timmer::Timmer(int timeInterval)
+    Timer::Timer(int timeInterval)
         : timeNum_(1000 / timeInterval),
           timeWheel_(timeNum_),
           mutexVec(timeNum_),
@@ -58,7 +60,7 @@ namespace Fish
     {
     }
 
-    Timmer::~Timmer()
+    Timer::~Timer()
     {
         for (auto &list : timeWheel_)
         {
@@ -69,7 +71,7 @@ namespace Fish
         }
     }
 
-    void Timmer::addOnceTask(std::function<void()> task, int time) // time 单位：ms
+    void Timer::addOnceTask(std::function<void()> task, int time) // time 单位：ms
     {
         int index = time;
 
@@ -88,7 +90,7 @@ namespace Fish
         timeWheel_[index].push_back(timer);
     }
 
-    void Timmer::addOnceTask(std::function<void(int)> task, int time)
+    void Timer::addOnceTask(std::function<void(int)> task, int time)
     {
         int index = time;
 
@@ -107,7 +109,7 @@ namespace Fish
         timeWheel_[index].push_back(timer);
     }
 
-    bool Timmer::addPriodTask(std::function<void()> task, int time, int id)
+    bool Timer::addPriodTask(std::function<void()> task, int time, int id)
     {
         NotNeedTime *timer;
         {
@@ -140,7 +142,7 @@ namespace Fish
         return true;
     }
 
-    bool Timmer::addPriodTask(std::function<void(int)> task, int time, int id)
+    bool Timer::addPriodTask(std::function<void(int)> task, int time, int id)
     {
         NeedTime *timer;
 
@@ -174,7 +176,7 @@ namespace Fish
         return true;
     }
 
-    bool Timmer::removePriodTask(int id)
+    bool Timer::removePriodTask(int id)
     {
         std::lock_guard guard(priodTimerGuarder_);
 
@@ -188,7 +190,7 @@ namespace Fish
         return true;
     }
 
-    void Timmer::start()
+    void Timer::start()
     {
         if (working_)
             return;

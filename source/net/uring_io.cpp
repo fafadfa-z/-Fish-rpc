@@ -116,7 +116,7 @@ namespace Fish
                 }
 
                 channel->alreadyRead(res);
-                channel->task_.handler.resume();
+                channel->task().handler.resume();
 
                 freeNum_++;
             }
@@ -129,13 +129,23 @@ namespace Fish
 
                 auto channel = iter->second;
 
-                channel->clearSendBuf();
+                auto res = cqe->res;
+        
+                channel ->eraseWrite(res);
 
-                channel->reduseSend();
+                auto sendView = channel->dispWriteBuf();
 
-                freeNum_++;
+                if(sendView.size()>0) //在发送过程中有额外的数据到来，还需发送
+                {
+                    addWriteRequest(channel->fd(),sendView.data(),sendView.size());
+                }
+                else //没有要发送的数据了
+                { 
+                    channel->reduseSend();
+                    freeNum_++;
+                }
 
-                 cout<<"---------------------"<<endl;
+
             }
         }
 
@@ -197,9 +207,9 @@ namespace Fish
             flag->channel = channel.get();
             // sqe->user_data = flag.uring_data;
 
-            auto buf = channel->disPtr();
+            auto buf = channel->dispWriteBuf();
 
-            io_uring_prep_recv(sqe, fd, buf, channel->freeSize(), 0);
+            io_uring_prep_recv(sqe, fd, const_cast<char*>(buf.data()), buf.size(), 0);
 
             io_uring_sqe_set_data(sqe, flag);
         }
@@ -310,7 +320,7 @@ namespace Fish
 
         connections_.insert({fd, newChannel});
 
-        newChannel->task_ = coroutineFun(*newChannel); //开启协程;
+        newChannel->task() = coroutineFun(*newChannel); //开启协程;
 
         return newChannel;
     }

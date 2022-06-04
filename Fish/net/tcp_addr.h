@@ -1,13 +1,17 @@
 #pragma once
 
 #include <string>
-
+#include <arpa/inet.h>
 
 namespace Fish
 {
     class TcpAddr
     {
     public:
+        TcpAddr() = default;
+
+        TcpAddr(const sockaddr_in&);
+
         TcpAddr(const std::string str, int port);
        
 

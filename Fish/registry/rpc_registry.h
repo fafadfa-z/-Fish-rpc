@@ -6,18 +6,34 @@
 #include <unordered_map>
 #include "net/tcp_addr.h"
 
+#include "base/sync/mutex.h"
 #include "net/tcp_server.h"
 #include "rpc/protocol_manager.h"
+#include "rpc/heart_manager.h"
 
 namespace Fish
 {
+    enum ProviderStatus  //provider 的状态
+    {
+        health,
+        weak,
+        dead
+    };
+
     struct ProviderMes //用于储存 服务提供方的所有信息
     {
         using ptr = std::shared_ptr<ProviderMes>;
 
-        std::string name;
+        uint16_t id;  
 
         TcpAddr addr;
+
+        ProviderStatus status;
+
+        std::weak_ptr<Channel> channel;
+
+        int64_t lastHeart_send;  //上一次心跳检测发送的时间  
+        int64_t lastHeart_recv;  //上一次心跳检测接收的时间
     };
 
     class Channel;
@@ -31,16 +47,25 @@ namespace Fish
 
         void handleMessage(std::shared_ptr<Channel>);
 
-        void sendMes(std::shared_ptr<Channel>);
 
         const std::string &name() { return name_; }
 
 
+        // void sendMes(std::shared_ptr<Channel>);
     private:
         
-        uint16_t id_;    // 由 registry 指定的设备id
+        Mutex providers_mut_;
+        std::vector<ProviderMes> providers_;
 
-        std::unordered_map<uint16_t,ProviderMes> providersMap_;
+        // 处理provider信息
+        void handleProvider(Protocol::ptr&,std::shared_ptr<Channel>&);
+
+        // 处理新连接的 provider
+        void providerNew(Protocol::ptr&,std::shared_ptr<Channel>&);
+
+    private:
+        void healthDetection(uint16_t);
+
 
     private:
         

@@ -17,12 +17,12 @@ namespace Fish
 
     void ReadWaitor::await_suspend(std::coroutine_handle<Task::promise_type> handle)
     {
-       channel_.uring_->addReadRequest(channel_.fd());
+       channel_.uring()->addReadRequest(channel_.fd());
     }
 
     std::string_view ReadWaitor::await_resume()
     {
-        auto view = channel_.disView();
+        auto view = channel_.dispReadBuf();
 
         // std::cout<<"await_resume()"<<std::endl;  //输出一下调试信息
 

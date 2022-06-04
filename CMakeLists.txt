@@ -36,7 +36,7 @@ add_executable(provider.exe example/provider.cpp ${PRO_DIR})
 #registry.cpp
 add_executable(registry.exe example/registry.cpp ${REG_DIR})
 
-#consumer.cpp
-add_executable(main.exe main.cpp ${PRO_DIR})
+# #consumer.cpp
+# add_executable(main.exe main.cpp ${PRO_DIR})
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)

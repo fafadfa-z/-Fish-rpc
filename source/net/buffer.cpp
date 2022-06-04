@@ -38,14 +38,17 @@ namespace Fish
         writeIndex_ += view.size();
     }
 
-    const std::string_view Buffer::disBuf() const
+    const std::string_view Buffer::disRead() const
     {
         return std::string_view(&buf_[readIndex_], writeIndex_ - readIndex_);
     }
 
-    char *Buffer::disData()
+    const std::string_view Buffer::disWrite() const
     {
-        return &buf_[0];
+        auto size = buf_.size() - writeIndex_ - 1;
+        assert(size >= 0);
+        
+        return std::string_view(&buf_[writeIndex_], size);
     }
 
     void Buffer::eraseData(size_t len)
@@ -60,15 +63,6 @@ namespace Fish
         {
             readIndex_ += len;
         }
-    }
-
-    const size_t Buffer::freeSize() const
-    {
-        auto size = buf_.size() - writeIndex_ - 1;
-
-        assert(size >= 0);
-
-        return static_cast<size_t>(size);
     }
 
     void Buffer::already(size_t len)

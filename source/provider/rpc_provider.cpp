@@ -65,7 +65,7 @@ namespace Fish
 
    void RpcProvider::hanleHealth(Protocol::ptr& protocol, Channel::ptr channel)
    {
-      assert(protocol->process() == ProtocolProcess::perfect);
+      assert(protocol->type() == MsgType::Rpc_Health);
 
       LOG_INFO<<TcpServer::name()<<" Handle health detection"<<Fish::end;
 

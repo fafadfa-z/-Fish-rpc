@@ -1,7 +1,8 @@
 #include "net/tcp_addr.h"
 
-#include <arpa/inet.h>
+
 #include <stdexcept>
+
 
 namespace Fish
 {
@@ -15,8 +16,24 @@ namespace Fish
         }
         else
             throw std::runtime_error("TcpAddr: invalid ip or port");
-        
     }
+
+    TcpAddr::TcpAddr(const sockaddr_in& addr)
+    {
+        char ipBuf[INET_ADDRSTRLEN];
+        
+        auto ip = inet_ntop(AF_INET, &addr.sin_addr, ipBuf, INET_ADDRSTRLEN);
+        auto port = ntohs(addr.sin_port);
+
+        if (avlid(ip, port))
+        {
+            ip_ = ip;
+            port_ = port;
+            return;
+        }
+
+        throw std::runtime_error("TcpAddr: invalid ip or port");
+    }   
 
     TcpAddr::TcpAddr(const std::string str) //输入格式为 "127.0.0.1:8848"
     {
@@ -31,7 +48,7 @@ namespace Fish
 
             if (avlid(ip, port))
             {
-                ip_ = str;
+                ip_ = ip;
                 port_ = port;
                 return;
             }

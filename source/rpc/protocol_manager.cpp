@@ -8,7 +8,7 @@ namespace Fish
     Protocol::ptr ProtocolManager::readMes(std::shared_ptr<Channel>& channel)
     {
 
-        auto view = channel->disView();
+        auto view = channel->dispReadBuf();
 
         bool oldFlag = false;
 
@@ -30,7 +30,7 @@ namespace Fish
 
         auto [flag, size] = protocol->create(view);
 
-        channel->eraseFront(size);
+        channel->eraseRead(size);
 
         if (flag and oldFlag) //如果上一次处理的数据完成了。
         {
@@ -50,6 +50,4 @@ namespace Fish
 
         return Protocol::ptr();
     }
-        
-
 }
