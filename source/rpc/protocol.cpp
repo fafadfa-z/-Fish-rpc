@@ -1,14 +1,22 @@
 #include "rpc/protocol.h"
-#include "string.h"
-#include <cassert>
-#include <stdexcept>
-#include <algorithm>
-#include <iostream>
-#include <chrono>
+
+#include<chrono>
+#include"string.h"
+#include<iostream>
 
 namespace Fish
 {
-    std::string getTimeToString()
+    Protocol::Protocol()
+    {
+        msg_._msg.magic_ = dfMagic;
+        msg_._msg.totalLength_ = dfHeadLength;  
+        msg_._msg.headLength_ = dfHeadLength;
+        msg_._msg.version_ = dfVersion;
+        msg_._msg.sFormat_ = 1; 
+    }
+    
+
+    std::string Protocol::gettime()
     {
         using namespace std::chrono;
 
@@ -23,197 +31,145 @@ namespace Fish
         return result;
     }
 
-    bool Protocol::setContent(const char *ptr, size_t len)
+    //函数返回-1，说明create失败，
+    //函数返回其他负数，说明数据短于head，只读取了magic，返回magic索引位置的复数
+    //函数返回0，说明没有读到magic
+    //函数返回>0， 说明正常读取
+    int Protocol::create(std::string_view sView)
     {
-        [[unlikely]] if (len <= Max_size - Base_length)
+        if(sView.size() < dfHeadLength) return -1;
+        //Protocol::ptr protl = std::make_shared<Protocol>();       
+
+        size_t idx;             //表示查找位置
+        size_t readIdx = 0;     //表示已经读取的位置
+        int cl;
+        //使用状态机处理
+        switch (handleState)
         {
-            return false;
-        }
-        content_.resize(len);
+        case RPCSTATE::FREE:
+            //找magic
+            idx = sView.find(static_cast<char>(dfMagic));
+            if(idx == std::string_view::npos)   return -1;
 
-        std::copy(ptr, ptr + len, content_.begin());
+            sView = sView.substr(idx);
+            readIdx += idx;           
+            
+            std::copy(sView.data(),sView.data() + msg_._msg.totalLength_,msg_.msgStr);
 
-        return true;
-    }
-
-    bool Protocol::setContent(const std::deque<char> &que)
-    {
-        [[unlikely]] if (que.size() <= Max_size - Base_length)
-        {
-            return false;
-        }
-        content_.assign(que.begin(), que.end());
-        return true;
-    }
-
-    bool Protocol::setContent(const char *ptr)
-    {
-        return setContent(ptr, ::strlen(ptr));
-    }
-
-    bool Protocol::setContent(const std::string &str)
-    {
-        [[unlikely]] if (str.size() <= Max_size - Base_length)
-        {
-            return false;
-        }
-        content_ = str;
-        return true;
-    }
-
-    bool Protocol::setContent(const std::string_view view)
-    {
-        [[unlikely]] if (view.size() <= Max_size - Base_length)
-        {
-            return false;
-        }
-
-        content_ = view;
-        return true;
-    }
-
-    void Protocol::calcSize() //重新计算总长度
-    {
-        mes_.mes.size_ = Base_length + content_.size();
-    }
-
-    std::pair<bool, size_t> Protocol::create(std::string_view view)
-    {
-        if (view.size() == 0)
-            return {false, 0};
-
-        size_t index;
-
-        size_t eraseSize = 0;  //储存一共读取的字节数
-
-        switch (process_)
-        {
-        case ProtocolProcess::empty:
-            //寻找对应的魔法数
-            index = view.find(static_cast<char>(default_magic_));
-
-            if (index == std::string_view::npos)
-                return {false, view.size()};
-
-            view = view.substr(index);
-            eraseSize += index;
-
-            if (view.size() < Base_length)
+            if(sView.size() < msg_._msg.totalLength_)
             {
-                return {false, index}; //将魔法数读出来,
-            }
-
-            std::copy(view.data(), view.data() + Base_length, mes_.mesStr);
-
-            process_ = ProtocolProcess::need_content;
-
-            if (view.size() < mes_.mes.size_) //如果内容没有全部收到
+                handleState = RPCSTATE::LACK;
+                return -1*idx;
+            }                
+            else
             {
-                return {false, index + Base_length};
-            }
+                handleState = RPCSTATE::WAITCONTENT;
+                sView = sView.substr(msg_._msg.totalLength_);
+                readIdx += msg_._msg.totalLength_;
+            } 
+        case RPCSTATE::LACK:
+            break;
+        case RPCSTATE::WAITCONTENT:
+           //找到contentLength存储的位置
+            cl = 0;
+            for(auto i = msg_._msg.totalLength_-4 ;i < msg_._msg.totalLength_;i++) 
+            {   cl *= 10;  cl += (msg_.msgStr[i] - '0'); }
+            msg_._msg.contentLength_ = cl;
 
-            view = view.substr(Base_length);
-            eraseSize += Base_length;
-
-        case ProtocolProcess::need_content:
-            if (content_.size() + view.size() < mes_.mes.size_ - Base_length)
+            //仍然缺失content内容
+            if(sView.size() + content_.size() < msg_._msg.contentLength_)   
             {
-                content_ += view;
-
-                return {false, view.size() + eraseSize};
+                content_ += sView;
+                handleState =  RPCSTATE::LACK;
             }
-
-            view = view.substr(0, mes_.mes.size_ - content_.size());
-
-            content_ += view;
-
-            process_ = ProtocolProcess::perfect;
-
-            return {true, view.size() + eraseSize};
-
-        case ProtocolProcess::perfect:
-
-            throw std::runtime_error("本不应该出现这种情况");
-        };
-
-        return {false, 0};
+            else
+            {
+                std::string thisContent;
+                thisContent = sView.substr(0, msg_._msg.contentLength_ - content_.size());
+                //std::copy(sView.data(),sView.data() + msg_._msg.contentLength_ - content_.size(),thisContent);
+                content_ += thisContent;
+                handleState = RPCSTATE::READY;
+                readIdx += (msg_._msg.contentLength_ - content_.size());
+                return readIdx;
+            }       
+            case RPCSTATE::READY:    
+                break;
+            case RPCSTATE::WORKING:
+                break;
+        }       
+        return readIdx;
     }
 
-    
-    Protocol::ptr Protocol::createHealthPacket(uint16_t host, uint16_t id) //创建心跳包
+    Protocol::ptr Protocol::hbCreate(uint32_t id)
     {
-        ptr result = std::make_shared<Protocol>();
 
-        result->mes_ = result->setHeadMes(MsgType::Rpc_Health,host, id);
-        result->content_ = getTimeToString();
-
-        result->calcSize();
-        return result;
+        static Protocol::ptr heartBeat = std::make_shared<Protocol>();
+        heartBeat->setHeadMsg(MsgType::FRPC_HBEAT,id);
+        heartBeat->setContent(heartBeat->gettime());
+        return heartBeat;
     }
 
-    Protocol::ptr Protocol::createProvider(uint16_t host, uint16_t id) //创建注册成为Provider的包
+    Protocol::ptr Protocol::pvdCreat(uint32_t id)
     {
-        ptr result = std::make_shared<Protocol>();
-
-        result->mes_ = result->setHeadMes(MsgType::Rpc_Provider,host, id);
-        result->content_ = getTimeToString();
-
-        result->calcSize();
-        return result;
+        static Protocol::ptr provider = std::make_shared<Protocol>();
+        provider->setHeadMsg(MsgType::FRPC_PROVIDER,id);
+        provider->setContent(provider->gettime());
+        return provider;
     }
 
-    Protocol::ptr Protocol::createConsumer(uint16_t host, uint16_t id) //创建注册成为Consumer的包
+    Protocol::ptr Protocol::csmCreate(uint32_t id)
     {
-        ptr result = std::make_shared<Protocol>();
-
-        result->mes_ = result->setHeadMes(MsgType::Rpc_Consumer,host, id);
-
-        result->content_ = getTimeToString();
-
-        result->calcSize();
-        return result;
+        static Protocol::ptr cusmer = std::make_shared<Protocol>();
+        cusmer->setHeadMsg(MsgType::FRPC_CONSUMER,id);
+        cusmer->setContent(cusmer->gettime());
+        return cusmer;
     }
 
-    Protocol::headMes Protocol::setHeadMes(MsgType type, uint16_t host, uint16_t id)
+    void Protocol::setContent(const std::string& content)
     {
-        headMes result;
-
-        result.mes.magic_ = default_magic_;
-        result.mes.version_ = default_version_;
-        result.mes.type_ = type;
-        result.mes.id_ = id;
-        result.mes.host_ = host;
-
-        return result;
+        msg_._msg.contentLength_ += content.size();
+        content_ = content;
     }
+
+    void Protocol::setLength(uint32_t length)
+    {   msg_._msg.totalLength_ += length - msg_._msg.headLength_; 
+        if(msg_._msg.totalLength_ < 0) 
+            msg_._msg.totalLength_ = 0;
+        msg_._msg.headLength_ = length; 
+    }
+
+    // void Protocol::editAppend(std::string_view& sview)
+    // {
+    //     msg_._msg.totalLength_ += sview.size();
+    //     std::copy(sview.begin(),sview.end(),msg_._msg.extend_);
+    // }
+
+    void Protocol::setHeadMsg(MsgType type,uint32_t id)
+    {
+        msg_._msg.msgType_ = type;
+        msg_._msg.msgId_ = id; 
+    }
+    void Protocol::printInfo()
+    {
+        std::cout << "magic_ = " << (int)msg_._msg.magic_ << "    totalLength_ = "
+        << (int)msg_._msg.totalLength_ << "    headLength_ = " << (int)msg_._msg.headLength_
+        << "    version_ = " << (int)msg_._msg.version_ << "    msgType_ = "
+        << (int)msg_._msg.msgType_ << "    sFormat_ = " << (int)msg_._msg.sFormat_
+        << "    msgId_ = " << (int)msg_._msg.msgId_ << "    contentLength_ = " << (int)msg_._msg.contentLength_ << std::endl;
+    }
+
 
     std::string Protocol::result()
     {
         std::string result;
 
-        result.resize(Base_length);
+        result.resize(msg_._msg.totalLength_);
 
-        std::copy(mes_.mesStr, mes_.mesStr + Base_length, &result[0]);
+        std::copy(msg_.msgStr, msg_.msgStr + msg_._msg.totalLength_, &result[0]);
 
         result += content_;
 
         return result;
-    }
-
-    void Protocol::printMes()
-    {
-        std::cout << "--------------packet mes--------------" << std::endl;
-        std::cout << "magic: " << (int)mes_.mes.magic_ << std::endl;
-
-        std::cout << "version: " << (int)mes_.mes.version_ << std::endl;
-
-        std::cout << "type: " << (int)mes_.mes.type_ << std::endl;
-
-        std::cout << "size: " << (int)mes_.mes.size_ << std::endl;
-
-        std::cout << "id: " << (int)mes_.mes.id_ << std::endl;
-
-        std::cout << "content: " << content_ << std::endl;
     }
 
 }

@@ -34,47 +34,41 @@ namespace Fish
 
       if(!protocol) return;
 
-      assert(protocol->process() == ProtocolProcess::perfect);
+      assert(protocol->getState() == RPCSTATE::READY);
 
-      auto type = protocol->type();
+      auto type = protocol->getType();
 
       switch(type)
       {
-         case MsgType::Rpc_None:
+         case MsgType::FRPC_NONSENCE:
             LOG_FATAL<<"不应该出现的情况..."<<Fish::end;
             break;
 
-         case MsgType::Rpc_Health:
+         case MsgType::FRPC_HBEAT:
             hanleHealth(protocol, channel);
 
          break;
-         case MsgType::Rpc_Provider:
+         case MsgType::FRPC_PROVIDER:
 
 
          break;
-         case MsgType::Rpc_Consumer:
 
-
-         break; 
-         case MsgType::Rpc_Method:
-
-         break;
       };
    }
 
 
    void RpcProvider::hanleHealth(Protocol::ptr& protocol, Channel::ptr channel)
    {
-      assert(protocol->type() == MsgType::Rpc_Health);
+      assert(protocol->getType() == MsgType::FRPC_HBEAT);
 
       LOG_INFO<<TcpServer::name()<<" Handle health detection"<<Fish::end;
 
       std::optional<Protocol::ptr> responce;
 
-      switch(protocol->id())
+      switch(protocol->getId())
       {
          case 1: //心跳包发送
-            responce = Protocol::createHealthPacket(id_, 2);
+            // responce = Protocol::createHealthPacket(id_, 2);
 
             refreshHealth(channel->fd());  //更新心跳信息(需要之后完成)
 

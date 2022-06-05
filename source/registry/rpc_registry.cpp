@@ -29,33 +29,31 @@ namespace Fish
 
     void RpcRegistry::handleMessage(Channel::ptr channel)
     {
+        
         auto protocol = protocols_.readMes(channel);
 
         if (!protocol)
             return;
 
-        assert(protocol->process() == ProtocolProcess::perfect);
+        assert(protocol->getState() == RPCSTATE::READY);
 
-        auto type = protocol->type();
+        auto type = protocol->getType();
 
         switch (type)
         {
-        case MsgType::Rpc_None:
+        case MsgType::FRPC_NONSENCE:
             LOG_DEBUG << "不应该出现的情况..." << Fish::end;
             break;
 
-        case MsgType::Rpc_Health:
+        case MsgType::FRPC_HBEAT:
             // hanleHealth(protocol, channel);
 
             break;
-        case MsgType::Rpc_Provider:
+        case MsgType::FRPC_PROVIDER:
             handleProvider(protocol, channel);
 
             break;
-        case MsgType::Rpc_Consumer:
-
-            break;
-        case MsgType::Rpc_Method:
+        case MsgType::FRPC_CONSUMER:
 
             break;
         };
@@ -63,9 +61,9 @@ namespace Fish
 
     void RpcRegistry::handleProvider(Protocol::ptr &protocol, Channel::ptr &channel)
     {
-        assert(protocol->type() == MsgType::Rpc_Provider);
+        assert(protocol->getState() == MsgType::FRPC_PROVIDER);
 
-        switch (protocol->id())
+        switch (protocol->getId())
         {
         case 1: //注册成为provider
 

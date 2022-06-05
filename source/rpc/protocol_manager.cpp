@@ -27,8 +27,12 @@ namespace Fish
                 oldFlag = true;
             }
         }
+        
+        auto size = protocol->create(view);
 
-        auto [flag, size] = protocol->create(view);
+        bool flag = protocol->getState() == RPCSTATE::READY;
+
+        size = std::max(size,0);
 
         channel->eraseRead(size);
 
