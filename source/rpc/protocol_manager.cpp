@@ -5,7 +5,7 @@
 
 namespace Fish
 {
-    Protocol::ptr ProtocolManager::readMes(std::shared_ptr<Channel>& channel)
+    Protocol::ptr ProtocolManager::readMes(std::shared_ptr<Channel> &channel)
     {
 
         auto view = channel->dispReadBuf();
@@ -27,12 +27,12 @@ namespace Fish
                 oldFlag = true;
             }
         }
-        
+
         auto size = protocol->create(view);
 
         bool flag = protocol->getState() == RPCSTATE::READY;
 
-        size = std::max(size,0);
+        size = std::max(size, 0);
 
         channel->eraseRead(size);
 
@@ -48,10 +48,21 @@ namespace Fish
 
             undoProtols_.emplace(channel->fd(), protocol);
         }
-    
-        if(flag)
+
+        if (flag)
             return protocol;
 
         return Protocol::ptr();
+    }
+
+    Protocol::ptr ProtocolManager::createHeart(const std::string &content)
+    {
+        Protocol::ptr heartBeat = std::make_shared<Protocol>();
+
+        heartBeat->setMsgType(MsgType::FRPC_HBEAT);
+        heartBeat->setMsgId(1);
+        heartBeat->setContent(content);
+
+        return heartBeat;
     }
 }

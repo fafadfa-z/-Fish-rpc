@@ -71,14 +71,7 @@ namespace Fish
         public:    
             //创建一个新的协议流程
             int create(std::string_view);
-            //创建符合协议的消息流
-            //static Protocol::ptr msgCreate(std::string_view);
-            //创建心跳包
-            static Protocol::ptr hbCreate(uint32_t id = 0);
-            //创建注册Provider包
-            static Protocol::ptr pvdCreat(uint32_t id = 0);
-            //创建注册Consumer包
-            static Protocol::ptr csmCreate(uint32_t id = 0);
+
         public:
             //获取参数
             uint8_t  getMagic() const { return msg_._msg.magic_;}
@@ -95,11 +88,13 @@ namespace Fish
             void setMagic(uint8_t magic) {msg_._msg.magic_ = magic;}
             void setAppendLength(uint32_t adLength) { msg_._msg.totalLength_ = adLength + msg_._msg.headLength_;};
             void setVersion(uint8_t version) { msg_._msg.version_ = version;}
-            void setMsgType(uint16_t msgType) { msg_._msg.msgType_ = msgType;}
             void setSFormat(uint8_t format) { msg_._msg.sFormat_ = format;}
-            void setMsgId(uint32_t id) { msg_._msg.msgId_ = id;}      
-            void setContent(const std::string& content);
             void setLength(uint32_t length) ;
+
+            //下面是需要自己写的
+            void setMsgId(uint32_t id) { msg_._msg.msgId_ = id;}      
+            void setMsgType(uint16_t msgType) { msg_._msg.msgType_ = msgType;}
+            void setContent(const std::string& content);
             //void editAppend(std::string_view&);
 
 

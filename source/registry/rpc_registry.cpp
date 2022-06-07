@@ -7,9 +7,11 @@
 
 namespace Fish
 {
-    RpcRegistry::RpcRegistry(TcpAddr addr, std::string name)
-        : TcpServer(addr, name)
+    RpcRegistry::RpcRegistry(TcpAddr addr, std::string name, uint16_t id)
+        : TcpServer(addr, name), id_(id)
     {
+        nodes_.setEraseCallBack([this](uint16_t id){providerErase(id);});
+
     }
 
     void RpcRegistry::begin()
@@ -29,7 +31,7 @@ namespace Fish
 
     void RpcRegistry::handleMessage(Channel::ptr channel)
     {
-        
+
         auto protocol = protocols_.readMes(channel);
 
         if (!protocol)
@@ -46,7 +48,7 @@ namespace Fish
             break;
 
         case MsgType::FRPC_HBEAT:
-            // hanleHealth(protocol, channel);
+            hanleHealth(protocol, channel);
 
             break;
         case MsgType::FRPC_PROVIDER:
@@ -68,14 +70,20 @@ namespace Fish
         case 1: //注册成为provider
 
             providerNew(protocol, channel);
+            break;
+        case 2:
 
             break;
+
+
         };
     }
 
     void RpcRegistry::providerNew(Protocol::ptr &protocol, Channel::ptr &channel)
     {
+        auto id = nodes_.createId(); // 为新来的provider生成一个id号
 
+<<<<<<< HEAD
         auto now = Timer::getNow_Milli();
         ProviderMsg mes;
 
@@ -90,25 +98,42 @@ namespace Fish
             mes.id = providers_.size();
             providers_.push_back(std::move(mes));
         }
+=======
+        NodeManager::NodePtr newProvider = std::make_shared<ProviderNode>(id_,id);
 
-        // TcpServer::timer_->addPriodTask();
+        nodes_.addNode(newProvider);
+>>>>>>> origin/test
+
+        //添加心跳检测定时器
+        bool ret = TcpServer::timer_->addPriodTask([id,this]{nodes_.addInTimer_heart(id);},2000,id); 
+
+        assert(ret == true);
     }
 
-    void RpcRegistry::healthDetection(uint16_t id)
+    void RpcRegistry::providerErase(size_t id)   //此函数为 NodeManager 的回调
     {
+        bool ret = TcpServer::timer_->removePriodTask(id);
 
+        assert(ret == true);
+    }
+
+    void RpcRegistry::healthWorker(size_t id) //心跳检测的处理函数
+    {
+        // auto& provider = providers_[id - 1];
+
+        // auto content = provider.sendHeart();
+
+            // if(content == std::nullopt)
+        //     providerErase(id);   //心跳检测失败，断开连接
 
     }
 
-    // void RpcRegistry::sendMes(Channel::ptr channel)
-    // {
-    //     auto protocol = Protocol::createHealthPacket(1);
 
-    //     protocol->printMes();
 
-    //     auto mes = protocol->result();
+    void RpcRegistry::hanleHealth(Protocol::ptr &protocol, std::shared_ptr<Channel> &channel)
+    {
+    }
 
-    //     channel->send({mes.c_str(), mes.size()});
-    // }
+
 
 }

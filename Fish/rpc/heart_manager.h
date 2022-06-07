@@ -14,19 +14,19 @@ namespace Fish
         {
             int64_t sendTime = 0;
             int64_t recvTime = 0;
-
             uint16_t id = 0;         //心跳包的序列号
-            uint16_t service_id = 0; //对方的id
             bool statistics = false;
         };
 
         union HeartData
         {
-            struct data
+            struct Data
             {
-                uint16_t selfId_ = 0;   
-                uint16_t targetId_ = 0; 
+                uint16_t heartId_ = 0;   //心跳包的id
+                uint16_t targetId_ = 0;  //目标id
+                uint16_t selfId_ = 0;    //自身id
             };
+            Data data;
 
             char buf[sizeof(data)] = {0};
         };
@@ -34,12 +34,19 @@ namespace Fish
     public:
         HeartManager(uint16_t self, uint16_t target, size_t maxSize = 3);
 
+        ~HeartManager() {}
+
         // 发送心跳检测，并生成协议包的内容部分
         // 如果返回的数据中没有内容，则该链接被判断为不可达
         std::optional<std::string> sendHeart();
 
         //识别心跳检测传回来的数据
         void recvHeart(std::string &);
+
+
+        const auto getSelfId() const {return selfId_;} 
+        const auto getTargetId() const {return targetId_;}
+
 
         float lossRatio() //返回丢包率
         {
