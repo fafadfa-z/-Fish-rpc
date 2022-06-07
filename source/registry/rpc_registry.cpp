@@ -77,10 +77,10 @@ namespace Fish
     {
 
         auto now = Timer::getNow_Milli();
-        ProviderMes mes;
+        ProviderMsg mes;
 
         mes.addr = channel->addr();
-        mes.status = ProviderStatus::health;
+        mes.status = ProviderStatus::HEALTH;
         mes.lastHeart_send = now;
         mes.lastHeart_send = now;
         mes.channel = channel;

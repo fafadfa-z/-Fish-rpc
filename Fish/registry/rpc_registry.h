@@ -15,14 +15,15 @@ namespace Fish
 {
     enum ProviderStatus  //provider 的状态
     {
-        health,
-        weak,
-        dead
+        HEALTH, 
+        WEAK,
+        BUSY,
+        DEAD
     };
 
-    struct ProviderMes //用于储存 服务提供方的所有信息
+    struct ProviderMsg //用于储存 服务提供方的所有信息
     {
-        using ptr = std::shared_ptr<ProviderMes>;
+        using ptr = std::shared_ptr<ProviderMsg>;
 
         uint16_t id;  
 
@@ -55,7 +56,7 @@ namespace Fish
     private:
         
         Mutex providers_mut_;
-        std::vector<ProviderMes> providers_;
+        std::vector<ProviderMsg> providers_;
 
         // 处理provider信息
         void handleProvider(Protocol::ptr&,std::shared_ptr<Channel>&);
