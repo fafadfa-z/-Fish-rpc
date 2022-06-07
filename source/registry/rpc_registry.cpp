@@ -83,26 +83,9 @@ namespace Fish
     {
         auto id = nodes_.createId(); // 为新来的provider生成一个id号
 
-<<<<<<< HEAD
-        auto now = Timer::getNow_Milli();
-        ProviderMsg mes;
-
-        mes.addr = channel->addr();
-        mes.status = ProviderStatus::HEALTH;
-        mes.lastHeart_send = now;
-        mes.lastHeart_send = now;
-        mes.channel = channel;
-        
-        {
-            LockGuard<Mutex> guard(providers_mut_);
-            mes.id = providers_.size();
-            providers_.push_back(std::move(mes));
-        }
-=======
         NodeManager::NodePtr newProvider = std::make_shared<ProviderNode>(id_,id);
 
         nodes_.addNode(newProvider);
->>>>>>> origin/test
 
         //添加心跳检测定时器
         bool ret = TcpServer::timer_->addPriodTask([id,this]{nodes_.addInTimer_heart(id);},2000,id); 
