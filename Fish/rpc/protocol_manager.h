@@ -7,14 +7,15 @@
 #include <map>
 
 namespace Fish
-{   
+{
     class Channel;
 
     class ProtocolManager
     {
     public:
-        Protocol::ptr readMes(std::shared_ptr<Channel>&); //从channel 中读取数据
+        Protocol::ptr readMes(std::shared_ptr<Channel> &); //从channel 中读取数据
 
+        static Protocol::ptr createHeart(const std::string&); //创建心跳包
 
 
     private:

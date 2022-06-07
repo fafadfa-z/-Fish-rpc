@@ -100,31 +100,6 @@ namespace Fish
         return readIdx;
     }
 
-    Protocol::ptr Protocol::hbCreate(uint32_t id)
-    {
-
-        static Protocol::ptr heartBeat = std::make_shared<Protocol>();
-        heartBeat->setHeadMsg(MsgType::FRPC_HBEAT,id);
-        heartBeat->setContent(heartBeat->gettime());
-        return heartBeat;
-    }
-
-    Protocol::ptr Protocol::pvdCreat(uint32_t id)
-    {
-        static Protocol::ptr provider = std::make_shared<Protocol>();
-        provider->setHeadMsg(MsgType::FRPC_PROVIDER,id);
-        provider->setContent(provider->gettime());
-        return provider;
-    }
-
-    Protocol::ptr Protocol::csmCreate(uint32_t id)
-    {
-        static Protocol::ptr cusmer = std::make_shared<Protocol>();
-        cusmer->setHeadMsg(MsgType::FRPC_CONSUMER,id);
-        cusmer->setContent(cusmer->gettime());
-        return cusmer;
-    }
-
     void Protocol::setContent(const std::string& content)
     {
         msg_._msg.contentLength_ += content.size();

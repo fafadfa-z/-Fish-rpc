@@ -16,17 +16,27 @@ namespace Fish
         if (!alive())
             return std::nullopt;
 
-        // auto &node = list_.back();
+        uint16_t id = 0;
 
-        // heatTask task{Timer::getNow_Milli(), 0, node.id + 1};
+        if(list_.empty())
+            id++;
+        else
+            id = list_.back().id + 1;
+        
 
-        // updateMessage();
+        heatTask task{Timer::getNow_Milli(), 0, id};
 
-        // insertNode(std::move(task));
+        updateMessage();
 
+        HeartData temp{0};
+
+        temp.data.heartId_ = task.id;
+        temp.data.targetId_ = targetId_;
+        temp.data.selfId_ = selfId_;
+
+        insertNode(std::move(task));
     
-        return "";
-
+        return temp.buf;
     }
 
     //目前只接受一个设备号和心跳id号
@@ -34,13 +44,25 @@ namespace Fish
     {
         assert(content.size() == sizeof(HeartData));
 
-        HeartData temp;
+        HeartData temp{0};
 
         std::copy(content.begin(),content.end(),temp.buf);
 
+        if(temp.data.selfId_ == 0) return;
         
 
+        if(temp.data.targetId_ == selfId_) //验证id正确性
+        {
+            for(auto& node:list_)
+            {
+                if(node.id == temp.data.heartId_)
+                {
+                    node.recvTime = Timer::getNow_Milli();
 
+                    return;
+                }
+            }
+        }
     }
 
 
