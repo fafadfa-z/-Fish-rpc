@@ -17,9 +17,9 @@ namespace Fish
 {
     enum NodeStatus // provider 的状态
     {
-        health,
-        weak,
-        dead
+        HEALTH,
+        WEAK,
+        DEAD
     };
 
     class Channel;
