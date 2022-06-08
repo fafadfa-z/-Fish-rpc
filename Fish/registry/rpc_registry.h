@@ -33,14 +33,7 @@ namespace Fish
 
         uint16_t id_;
 
-
-        // 处理provider信息
-        void handleProvider(Protocol::ptr &, std::shared_ptr<Channel> &);
-
-        //处理心跳检测
-        void hanleHealth(Protocol::ptr &, std::shared_ptr<Channel> &);
-        void healthWorker(size_t id); //心跳检测的发送函数
-
+ 
 
         // 处理新连接的 provider
         void providerNew(Protocol::ptr &, std::shared_ptr<Channel> &);

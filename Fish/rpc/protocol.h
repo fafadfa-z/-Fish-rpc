@@ -37,8 +37,15 @@ namespace Fish
         FRPC_NONSENCE = (uint8_t)0,  //无意义
 
         FRPC_HBEAT,     //心跳包
+
         FRPC_PROVIDER,  //申请成为服务提供商
+        FRPC_PROVIDER_RESPOSE, //申请的回应
         FRPC_CONSUMER,  //申请成为服务消费者
+        FRPC_CONSUMER_RESPOSE, //申请的回应
+
+        RPC_METHOD_LIST_PULL, //请求拉取方法列表
+
+
 
         FRPC_PREQUEST,  //服务提供商的请求
         FRPC_CREQUEST,  //服务消费者的请求

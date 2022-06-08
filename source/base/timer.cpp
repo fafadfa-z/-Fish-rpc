@@ -2,6 +2,8 @@
 #include <thread>
 #include <chrono>
 
+#include "base/log/logger.h"
+
 namespace Fish
 {
     using namespace std::chrono;
@@ -41,9 +43,17 @@ namespace Fish
 
     Timer *Timer::init(int time)
     {
-        if (entity_ == nullptr)
-            entity_ = new Timer(time);
 
+        [[unlikely]]if (entity_ == nullptr)
+        {
+            LOG_INFO<<"Timer: create timer.."<<Fish::end;
+
+            entity_ = new Timer(time);
+        }
+        else
+        {
+            LOG_INFO<<"Timer: return timer.."<<Fish::end;
+        }
         return entity_;
     }
     int64_t Timer::getNow_Milli()
