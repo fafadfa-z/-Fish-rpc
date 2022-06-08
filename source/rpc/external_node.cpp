@@ -69,10 +69,25 @@ namespace Fish
             eraseNode(iter->second);
         else
         {
-            auto protocol = ProtocolManager::createHeart(*content);
+            auto protocol = ProtocolManager::createHeart(iter->second->getSelfId(), *content);
 
             auto mes = protocol->result();
             iter->second->sendMeg(mes);
         }
     }
+
+    void NodeManager::heartRecv(uint16_t id, const std::string& content)
+    {
+        std::unordered_map<uint16_t, NodePtr>::iterator iter;
+
+        {
+            LockGuard guard(nodeGuard_);
+
+            iter = nodes_.find(id);
+        }
+        assert(iter != nodes_.end());
+
+        iter->second->recvHeart(content);
+    }
+
 }

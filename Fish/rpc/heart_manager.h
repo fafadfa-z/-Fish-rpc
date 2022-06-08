@@ -24,7 +24,6 @@ namespace Fish
             {
                 uint16_t heartId_ = 0;   //心跳包的id
                 uint16_t targetId_ = 0;  //目标id
-                uint16_t selfId_ = 0;    //自身id
             };
             Data data;
 
@@ -41,7 +40,7 @@ namespace Fish
         std::optional<std::string> sendHeart();
 
         //识别心跳检测传回来的数据
-        void recvHeart(std::string &);
+        void recvHeart(const std::string &);
 
 
         const auto getSelfId() const {return selfId_;} 

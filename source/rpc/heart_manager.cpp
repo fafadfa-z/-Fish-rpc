@@ -5,10 +5,9 @@
 
 namespace Fish
 {
-    HeartManager::HeartManager(uint16_t self,uint16_t target,size_t maxSize)
-        : maxSize_(maxSize),selfId_(self),targetId_(target)
+    HeartManager::HeartManager(uint16_t self, uint16_t target, size_t maxSize)
+        : maxSize_(maxSize), selfId_(self), targetId_(target)
     {
-
     }
 
     std::optional<std::string> HeartManager::sendHeart()
@@ -18,53 +17,45 @@ namespace Fish
 
         uint16_t id = 0;
 
-        if(list_.empty())
+        if (list_.empty())
             id++;
         else
             id = list_.back().id + 1;
-        
 
         heatTask task{Timer::getNow_Milli(), 0, id};
-
-        updateMessage();
 
         HeartData temp{0};
 
         temp.data.heartId_ = task.id;
         temp.data.targetId_ = targetId_;
-        temp.data.selfId_ = selfId_;
 
         insertNode(std::move(task));
-    
+
         return temp.buf;
     }
 
-    //目前只接受一个设备号和心跳id号
-    void HeartManager::recvHeart(std::string& content)
+    void HeartManager::recvHeart(const std::string &content)
     {
         assert(content.size() == sizeof(HeartData));
 
         HeartData temp{0};
 
-        std::copy(content.begin(),content.end(),temp.buf);
+        std::copy(content.begin(), content.end(), temp.buf);
 
-        if(temp.data.selfId_ == 0) return;
-        
-
-        if(temp.data.targetId_ == selfId_) //验证id正确性
+        if (temp.data.targetId_ == selfId_) //验证id正确性
         {
-            for(auto& node:list_)
+            for (auto &node : list_)
             {
-                if(node.id == temp.data.heartId_)
+                if (node.id == temp.data.heartId_)
                 {
                     node.recvTime = Timer::getNow_Milli();
-
+                    
+                    updateMessage(); //更新统计信息
                     return;
                 }
             }
         }
     }
-
 
     bool HeartManager::alive()
     {
@@ -78,7 +69,7 @@ namespace Fish
 
     void HeartManager::insertNode(HeartManager::heatTask &&node)
     {
-        [[unlikely]] if (list_.empty())  // 记录开始的时间
+        [[unlikely]] if (list_.empty()) // 记录开始的时间
         {
             beginTime_ = Timer::getNow_Milli();
         }
@@ -100,16 +91,16 @@ namespace Fish
 
     void HeartManager::updateMessage() // 更新统计信息
     {
-        for(auto& node : list_)
+        for (auto &node : list_)
         {
-            if(!node.statistics)
+            if (!node.statistics)
             {
                 node.statistics = true;
-                totalNum_ ++;
+                totalNum_++;
 
-                if(node.recvTime > node.sendTime) //收到了心跳回应
+                if (node.recvTime > node.sendTime) //收到了心跳回应
                 {
-                    totalTime_ += node.recvTime - node.sendTime;             
+                    totalTime_ += node.recvTime - node.sendTime;
                 }
                 else
                 {

@@ -55,13 +55,35 @@ namespace Fish
         return Protocol::ptr();
     }
 
-    Protocol::ptr ProtocolManager::createHeart(const std::string &content)
+    Protocol::ptr ProtocolManager::createHeart(uint16_t id, const std::string &content)
     {
         Protocol::ptr heartBeat = std::make_shared<Protocol>();
 
         heartBeat->setMsgType(MsgType::FRPC_HBEAT);
-        heartBeat->setMsgId(1);
+        heartBeat->setMsgId(id);
         heartBeat->setContent(content);
+
+        return heartBeat;
+    }
+
+    Protocol::ptr ProtocolManager::createProviderResponce(uint16_t id, const std::string &content)
+    {
+        Protocol::ptr heartBeat = std::make_shared<Protocol>();
+
+        heartBeat->setMsgType(MsgType::FRPC_PROVIDER_RESPOSE);
+        heartBeat->setMsgId(id);
+        heartBeat->setContent(content);
+
+        return heartBeat;
+    }
+
+    Protocol::ptr ProtocolManager::createMothodPull(uint16_t id)
+    {
+        Protocol::ptr heartBeat = std::make_shared<Protocol>();
+
+        heartBeat->setMsgType(MsgType::RPC_METHOD_LIST_PULL);
+        heartBeat->setMsgId(id);
+        heartBeat->setContent("");
 
         return heartBeat;
     }
