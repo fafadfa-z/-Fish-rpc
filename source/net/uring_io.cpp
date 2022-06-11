@@ -133,7 +133,7 @@ namespace Fish
         
                 channel ->eraseWrite(res);
 
-                auto sendView = channel->dispWriteBuf();
+                auto sendView = channel->dispSendBuf();
 
                 if(sendView.size()>0) //在发送过程中有额外的数据到来，还需发送
                 {
@@ -259,8 +259,6 @@ namespace Fish
 
             Channel &channel = *(iter->second).get();
 
-            cout<<"+++++++++++++++++++"<<endl;
-
             UringRequest *flag = new UringRequest;
 
             flag->event_type = WRITE;
@@ -320,7 +318,9 @@ namespace Fish
 
         connections_.insert({fd, newChannel});
 
-        newChannel->task() = coroutineFun(*newChannel); //开启协程;
+        auto task  = coroutineFun(*newChannel);
+
+        newChannel->setTask(task); //开启协程;
 
         return newChannel;
     }

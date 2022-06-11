@@ -42,6 +42,8 @@ namespace Fish
         //识别心跳检测传回来的数据
         void recvHeart(const std::string &);
 
+        static std::pair<uint16_t,uint16_t> contentDecode(const std::string&);
+        static std::string contentEncode(uint16_t,uint16_t);
 
         const auto getSelfId() const {return selfId_;} 
         const auto getTargetId() const {return targetId_;}

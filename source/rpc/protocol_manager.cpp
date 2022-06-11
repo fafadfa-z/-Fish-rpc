@@ -55,6 +55,17 @@ namespace Fish
         return Protocol::ptr();
     }
 
+    Protocol::ptr ProtocolManager::create(MsgType type, uint16_t id, const std::string &content)
+    {
+        Protocol::ptr heartBeat = std::make_shared<Protocol>();
+
+        heartBeat->setMsgType(type);
+        heartBeat->setMsgId(id);
+        heartBeat->setContent(content);
+
+        return heartBeat;
+    }
+
     Protocol::ptr ProtocolManager::createHeart(uint16_t id, const std::string &content)
     {
         Protocol::ptr heartBeat = std::make_shared<Protocol>();

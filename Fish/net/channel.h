@@ -37,11 +37,14 @@ namespace Fish
         //对外部屏蔽下面的接口
         void setAddr(const TcpAddr &addr) { addr_ = addr; }
         void setCallBack(std::function<void(Channel::ptr)> cb) { cb_ = cb; }
+        void setTask(Task task){ task_ = task;}
 
         void setCloseCallBack(std::function<void(int)> cb) { closeCb_ = cb; }
 
         auto dispReadBuf() { return readBuf_.disRead(); }
         auto dispWriteBuf() { return readBuf_.disWrite(); }
+        
+        auto dispSendBuf() {return sendBuf_.disRead();}
 
         void clearReadBuf() { readBuf_.clear(); } //清空buf
         void clearSendBuf() { sendBuf_.clear(); } //清空发送buf

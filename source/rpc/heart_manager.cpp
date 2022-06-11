@@ -3,6 +3,9 @@
 
 #include <cassert>
 
+#include <iostream>
+using namespace std;
+
 namespace Fish
 {
     HeartManager::HeartManager(uint16_t self, uint16_t target, size_t maxSize)
@@ -29,6 +32,8 @@ namespace Fish
         temp.data.heartId_ = task.id;
         temp.data.targetId_ = targetId_;
 
+        cout << "发送心跳包: heartid= " << task.id << "targetId= " << targetId_ << "selfId= " << selfId_ << endl;
+
         insertNode(std::move(task));
 
         return temp.buf;
@@ -38,10 +43,13 @@ namespace Fish
     {
         assert(content.size() == sizeof(HeartData));
 
+
+
         HeartData temp{0};
 
         std::copy(content.begin(), content.end(), temp.buf);
 
+        cout << "收到心跳包: heartid= " << temp.data.heartId_ << " targetId= " << temp.data.targetId_ << endl;
         if (temp.data.targetId_ == selfId_) //验证id正确性
         {
             for (auto &node : list_)
@@ -49,7 +57,7 @@ namespace Fish
                 if (node.id == temp.data.heartId_)
                 {
                     node.recvTime = Timer::getNow_Milli();
-                    
+
                     updateMessage(); //更新统计信息
                     return;
                 }
@@ -59,6 +67,8 @@ namespace Fish
 
     bool HeartManager::alive()
     {
+        if(list_.size()<maxSize_) return true;
+
         for (auto &node : list_)
         {
             if (node.recvTime > node.sendTime) //只要有一个收到了，就没问题
@@ -108,5 +118,31 @@ namespace Fish
                 }
             }
         }
+    }
+
+    std::pair<uint16_t, uint16_t> HeartManager::contentDecode(const std::string &content)
+    {
+        if (content.size() != 2 * sizeof(uint16_t))
+            return {-1, -1};
+
+        HeartData temp{0};
+
+        std::copy(content.begin(), content.end(), temp.buf);
+
+        return {temp.data.targetId_, temp.data.heartId_};
+    }
+    std::string HeartManager::contentEncode(uint16_t targetId, uint16_t heartId)
+    {
+        if (targetId <= 0 or heartId <= 0)
+        {
+            return std::string();
+        }
+
+        HeartData temp{0};
+
+        temp.data.targetId_ = targetId;
+        temp.data.heartId_ = heartId;
+
+        return temp.buf;
     }
 }

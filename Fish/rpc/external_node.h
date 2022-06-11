@@ -23,38 +23,56 @@ namespace Fish
 
     class Channel;
 
-    class ExternNode : public HeartManager
+    class ExternNode
     {
     public:
         using ptr = std::shared_ptr<ExternNode>;
 
-        ExternNode(uint16_t self, uint16_t target, size_t maxHeart = 3)
-            : HeartManager(self, target, maxHeart)
-        {
-        }
+        ExternNode(uint16_t id = 0) :id_(id){}
 
         virtual ~ExternNode() = default;
 
         void sendMeg(std::string_view);
 
+        const auto getId() const {return id_;}
+
     protected:
         NodeStatus status_;
+
+        uint16_t id_;
 
         std::weak_ptr<Channel> channel_;
     };
 
-    class ProviderNode : public ExternNode
+    class ProviderNode : public ExternNode, public HeartManager
     {
     public:
         using ptr = std::shared_ptr<ExternNode>;
 
         ProviderNode(uint16_t self, uint16_t target, size_t maxHeart = 3)
-            : ExternNode(self, target, maxHeart)
+            :  ExternNode(self),HeartManager(self, target, maxHeart)
         {
         }
 
     private:
         std::unordered_set<std::string> mathods_; //储存providered支持的方法。
+    };
+
+    
+
+    class RegistryNode : public ExternNode
+    {
+    public:
+        using ptr = std::shared_ptr<RegistryNode>;
+
+        RegistryNode(uint16_t id = 0) :ExternNode(id){}
+
+        ~RegistryNode() = default;
+
+
+    private:
+
+
     };
 
     class NodeManager : public NonCopyable
@@ -68,12 +86,11 @@ namespace Fish
 
         uint16_t createId() { return ++currentId_; }
 
-
         bool addNode(NodePtr); //添加节点
 
         void addInTimer_heart(uint16_t); //在定时器中跑的心跳检测函数
 
-        void heartRecv(uint16_t, const std::string& content);
+        void heartRecv(uint16_t, const std::string &content);
 
     private:
         void eraseNode(NodePtr); //删除节点

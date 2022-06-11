@@ -10,7 +10,7 @@ using namespace std;
 
 int main()
 {
-    cout<<"this is provider"<<endl;
+    cout<<"this is registry"<<endl;
 
     Fish::RpcRegistry s({"127.0.0.1", 8888});
 

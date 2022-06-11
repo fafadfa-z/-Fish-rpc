@@ -25,12 +25,15 @@ namespace Fish
 
     protected:
 
+        friend class Timer;
+
         long timePoint_;  //记录应该执行的时间
         long insertTime_; //记录放入定时器中的时间
 
         bool repeatable_; //是否是重复事件
-
         int id_; //便于以后用来删除
+
+        bool canDelete_ = false;
     };
 
     //需要传入时间的版本
@@ -45,6 +48,7 @@ namespace Fish
         
         void work() override;
 
+        friend class Timer;
 
         std::function<void(int)>task_;
     };
@@ -58,12 +62,14 @@ namespace Fish
         {}
 
         void setTask(std::function<void()>task){task_ = task;}
+        
 
         void work() override
         {
             task_();
         }
 
+        friend class Timer;
         std::function<void()>task_;
     };
 

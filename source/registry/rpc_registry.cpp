@@ -5,19 +5,20 @@
 
 #include "base/timer.h"
 
-
 namespace Fish
 {
     RpcRegistry::RpcRegistry(TcpAddr addr, std::string name, uint16_t id)
         : TcpServer(addr, name), id_(id)
     {
-        nodes_.setEraseCallBack([this](uint16_t id){providerErase(id);});
-
+        nodes_.setEraseCallBack([this](uint16_t id)
+                                { providerErase(id); });
     }
 
     void RpcRegistry::begin()
     {
         TcpServer::setTimer(Timer::init(100));
+
+          
 
         TcpServer::setReadCallBack([this](Channel::ptr channel)
                                    { handleMessage(channel); });
@@ -28,6 +29,10 @@ namespace Fish
         TcpServer::begin();
 
         // TcpServer::createConnection({"127.0.0.1", 8848});
+
+        auto timer = Timer::init(100);
+
+        timer->start();
     }
 
     void RpcRegistry::handleMessage(Channel::ptr channel)
@@ -49,49 +54,56 @@ namespace Fish
             break;
 
         case MsgType::FRPC_HBEAT:
-                nodes_.heartRecv(protocol->getId(),protocol->getContent());
+            nodes_.heartRecv(protocol->getId(), protocol->getContent());
             break;
 
         case MsgType::FRPC_PROVIDER:
             providerNew(protocol, channel);
             break;
-            
+
         case MsgType::FRPC_CONSUMER:
 
             break;
 
         default:
-            LOG_DEBUG << "不应该出现的情况:"<<static_cast<int>(type)<< Fish::end;
+            LOG_DEBUG << "不应该出现的情况:" << static_cast<int>(type) << Fish::end;
             break;
         };
     }
+
+#include <iostream>
+    using namespace std;
 
     void RpcRegistry::providerNew(Protocol::ptr &protocol, Channel::ptr &channel)
     {
         auto id = nodes_.createId(); // 为新来的provider生成一个id号
 
-        NodeManager::NodePtr newProvider = std::make_shared<ProviderNode>(id_,id);
+        cout << "新provider到来, 为其分配id: " << id << endl;
+
+        NodeManager::NodePtr newProvider = std::make_shared<ProviderNode>(id_, id);
 
         nodes_.addNode(newProvider);
 
         //添加心跳检测定时器
-        bool ret = TcpServer::timer_->addPriodTask([id,this]{nodes_.addInTimer_heart(id);},2000,id); 
+        bool ret = TcpServer::timer_->addPriodTask([id, this]
+                                                   { nodes_.addInTimer_heart(id); },
+                                                   2000, id);
 
         assert(ret == true);
 
-        auto packAck = ProtocolManager::createProviderResponce(id_,std::to_string(id)); //返回生成的id 
+        auto packAck = ProtocolManager::createProviderResponce(id_, std::to_string(id)); //返回生成的id
 
-        auto packPull = ProtocolManager::createMothodPull(id_);    //创建向provider拉取方法的请求
+        // auto packPull = ProtocolManager::createMothodPull(id_); //创建向provider拉取方法的请求
 
-        channel->send(packAck->result() + packPull->result());     
+        // channel->send(packAck->result() + packPull->result());
+
+        channel->send(packAck->result());
     }
 
-    void RpcRegistry::providerErase(size_t id)   //此函数为NodeManager的回调
+    void RpcRegistry::providerErase(size_t id) //此函数为NodeManager的回调
     {
         bool ret = TcpServer::timer_->removePriodTask(id);
 
         assert(ret == true);
     }
-
-
 }

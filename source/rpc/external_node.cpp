@@ -8,6 +8,11 @@
 #include <cassert>
 #include <unordered_map>
 
+
+#include <iostream>
+using namespace std;
+
+
 namespace Fish
 {
 
@@ -21,7 +26,7 @@ namespace Fish
 
     bool NodeManager::addNode(NodePtr node)
     {
-        auto id = node->getSelfId();
+        auto id = node->getTargetId();
 
         LockGuard guard(nodeGuard_);
 
@@ -35,7 +40,9 @@ namespace Fish
 
     void NodeManager::eraseNode(NodePtr node)
     {
-        auto id = node->getSelfId();
+        cout<<"心跳检测失败 id = "<<node->getId()<<endl;
+
+        auto id = node->getTargetId();
 
         {
             LockGuard guard(nodeGuard_);
@@ -50,6 +57,8 @@ namespace Fish
         if (eraseCallBack_)
             eraseCallBack_(id);
     }
+
+
 
     void NodeManager::addInTimer_heart(uint16_t id)
     {
@@ -71,9 +80,15 @@ namespace Fish
         {
             auto protocol = ProtocolManager::createHeart(iter->second->getSelfId(), *content);
 
+  
+
             auto mes = protocol->result();
             iter->second->sendMeg(mes);
+
+            
         }
+
+        
     }
 
     void NodeManager::heartRecv(uint16_t id, const std::string& content)

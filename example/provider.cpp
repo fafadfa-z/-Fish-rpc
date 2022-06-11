@@ -13,6 +13,8 @@ int main()
 
     s.begin();
 
+    s.bindRegistry({"127.0.0.1", 8888});
+
     while(1)
     {
         std::this_thread::sleep_for(1s);
