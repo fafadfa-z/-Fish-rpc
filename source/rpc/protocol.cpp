@@ -89,7 +89,7 @@ namespace Fish
                 //std::copy(sView.data(),sView.data() + msg_._msg.contentLength_ - content_.size(),thisContent);
                 content_ += thisContent;
                 handleState = RPCSTATE::READY;
-                readIdx += (msg_._msg.contentLength_ - content_.size());
+                readIdx += content_.size();
                 return readIdx;
             }       
             case RPCSTATE::READY:    
