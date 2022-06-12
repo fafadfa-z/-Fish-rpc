@@ -42,7 +42,6 @@ namespace Fish
 
         size_t idx;             //表示查找位置
         size_t readIdx = 0;     //表示已经读取的位置
-        int cl;
         //使用状态机处理
         switch (handleState)
         {
@@ -67,15 +66,13 @@ namespace Fish
                 sView = sView.substr(msg_._msg.totalLength_);
                 readIdx += msg_._msg.totalLength_;
             } 
-        case RPCSTATE::LACK:
-            break;
+
         case RPCSTATE::WAITCONTENT:
            //找到contentLength存储的位置
-            cl = 0;
-            for(auto i = msg_._msg.totalLength_-4 ;i < msg_._msg.totalLength_;i++) 
-            {   cl *= 10;  cl += (msg_.msgStr[i] - '0'); }
-            msg_._msg.contentLength_ = cl;
+    
+            msg_._msg.contentLength_ = *((uint32_t*)(msg_.msgStr + msg_._msg.totalLength_-4));
 
+    
             //仍然缺失content内容
             if(sView.size() + content_.size() < msg_._msg.contentLength_)   
             {
@@ -84,16 +81,22 @@ namespace Fish
             }
             else
             {
-                std::string thisContent;
+                std::string_view thisContent;
                 thisContent = sView.substr(0, msg_._msg.contentLength_ - content_.size());
-                //std::copy(sView.data(),sView.data() + msg_._msg.contentLength_ - content_.size(),thisContent);
+               
                 content_ += thisContent;
                 handleState = RPCSTATE::READY;
+<<<<<<< HEAD
                 readIdx += content_.size();
+=======
+                readIdx += (content_.size());
+>>>>>>> d619b99cf5c37dc52bee9a18df202937eff12591
                 return readIdx;
             }       
             case RPCSTATE::READY:    
                 break;
+            case RPCSTATE::LACK:
+            break;
             case RPCSTATE::WORKING:
                 break;
         }       

@@ -17,6 +17,7 @@ namespace Fish
 
         TcpAddr(const std::string str);  //输入格式为 "127.0.0.1:8848"
  
+        std::string toStr();
 
         const std::string& ip()const{return ip_;}
 

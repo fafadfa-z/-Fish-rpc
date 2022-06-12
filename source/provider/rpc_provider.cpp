@@ -4,7 +4,10 @@
 #include <optional>
 
 #include "base/log/logger.h"
+#include "rpc/heart_manager.h"
 #include "net/channel.h"
+
+#include <iostream>
 
 namespace Fish
 {
@@ -27,84 +30,85 @@ namespace Fish
       TcpServer::begin();
    }
 
+   void RpcProvider::bindRegistry(TcpAddr addr)
+   {
+      if (providerChannel_)
+      {
+         LOG_FATAL << "重复绑定端口" << end;
+         return;
+      }
+
+      providerChannel_ = TcpServer::createConnection(addr);
+
+      if (!providerChannel_)
+      {
+         std::cout << "无法连接至注册中心：" << addr.toStr() << std::endl;
+         return;
+      }
+         
+
+      auto protocol = ProtocolManager::create(MsgType::FRPC_PROVIDER, 0, "");
+
+      providerChannel_->send(protocol->result());
+   }
 
    void RpcProvider::handleRead(Channel::ptr channel)
    {
       auto protocol = protocols_.readMes(channel);
 
-      if(!protocol) return;
+      if (!protocol)
+         return;
 
       assert(protocol->getState() == RPCSTATE::READY);
 
       auto type = protocol->getType();
 
-      switch(type)
+      switch (type)
       {
-         case MsgType::FRPC_NONSENCE:
-            LOG_FATAL<<"不应该出现的情况..."<<Fish::end;
-            break;
-
-         case MsgType::FRPC_HBEAT:
-            hanleHealth(protocol, channel);
-
-         break;
-         case MsgType::FRPC_PROVIDER:
-
-
+      case MsgType::FRPC_NONSENCE:
+         LOG_FATAL << "不应该出现的情况..." << Fish::end;
          break;
 
+      case MsgType::FRPC_HBEAT:
+         hanleHealth(protocol, channel);
+
+         break;
+      case MsgType::FRPC_PROVIDER:
+
+         break;
       };
    }
 
-
-   void RpcProvider::hanleHealth(Protocol::ptr& protocol, Channel::ptr channel)
+   void RpcProvider::hanleHealth(Protocol::ptr &protocol, Channel::ptr channel)
    {
-      assert(protocol->getType() == MsgType::FRPC_HBEAT);
+      auto targetId = protocol->getId();
 
-      LOG_INFO<<TcpServer::name()<<" Handle health detection"<<Fish::end;
+      auto [selfId, heartId] = HeartManager::contentDecode(protocol->getContent());
 
-      std::optional<Protocol::ptr> responce;
-
-      switch(protocol->getId())
+      if (selfId == -1 or heartId == -1)
       {
-         case 1: //心跳包发送
-            // responce = Protocol::createHealthPacket(id_, 2);
+         LOG_DEBUG << "无法解析的心跳包数据" << end;
+         return;
+      }
 
-            refreshHealth(channel->fd());  //更新心跳信息(需要之后完成)
+      if (id_ != selfId)
+      {
+         LOG_DEBUG << "收到非本机的心跳包 id = " << selfId << end;
+         return;
+      }
+      auto content = HeartManager::contentEncode(targetId, heartId);
 
-         break;
-         case 2: //心跳包回应（理论上收不到这个包）
+      auto sendProtocol = ProtocolManager::createHeart(id_, content);
 
-
-         default:
-            LOG_DEBUG<<TcpServer::name()<<" unexpected health type..."<<Fish::end;
-         break;
-      };
-
-      auto result = protocol->result();
-
-      if(responce) channel->send(result);
+      channel->send(sendProtocol->result());
    }
-
-
 
    void RpcProvider::handleClose(int fd)
    {
       // cout << "rpc provider close: " << fd << endl;
-
    }
    void RpcProvider::handleNew(int fd)
    {
       // cout << "rpc provider new: " << fd << endl;
-
    }
-
-   void RpcProvider::refreshHealth(int fd)
-   {
-
-
-
-
-   }
-
 }

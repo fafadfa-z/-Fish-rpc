@@ -43,7 +43,7 @@ namespace Fish
         FRPC_CONSUMER,  //申请成为服务消费者
         FRPC_CONSUMER_RESPOSE, //申请的回应
 
-        RPC_METHOD_LIST_PULL, //请求拉取方法列表
+        RPC_METHOD_LIST_PULL, //拉取方法列表
 
 
 
@@ -115,7 +115,7 @@ namespace Fish
         private:
             static constexpr uint8_t dfMagic = 0xcc;
             static constexpr uint16_t dfVersion = 1;
-            static constexpr uint8_t dfHeadLength = 15;
+            static constexpr uint8_t dfHeadLength = 12;
             static constexpr uint8_t apdLength = 0;
         private:             
             union headMsg
@@ -130,12 +130,13 @@ namespace Fish
                     uint8_t  version_ ;
                     uint16_t msgType_;
                     uint8_t  sFormat_;
-                    uint32_t msgId_;  
+                    uint8_t msgId_;  
                     //std::string  extend_ = "";
                     uint32_t contentLength_;
                 };
                 Msg _msg ;
-                char msgStr[dfHeadLength + 1 + apdLength];
+                char msgStr[dfHeadLength + apdLength];
+                static_assert(sizeof(Msg)==sizeof(msgStr),"length ");
             };
 
             union headMsg msg_;

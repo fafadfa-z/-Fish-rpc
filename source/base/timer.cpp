@@ -195,6 +195,8 @@ namespace Fish
         if (iter == priodTimerMap_.end())
             return false;
 
+        iter->second->canDelete_ = true;
+
         priodTimerMap_.erase(iter);
 
         return true;
@@ -226,7 +228,11 @@ namespace Fish
             for (auto iter = wheelList.begin(); iter != wheelList.end(); iter++)
             {
                 auto timer = *iter;
-                if (timer->timePoint() <= timeBegin)
+                if(timer->canDelete_)
+                {
+                    iter = wheelList.erase(iter); //小心这里迭代器失效的问题
+                }
+                else if (timer->timePoint() <= timeBegin)
                 {
                     timeOutVec.push_back(timer);
 

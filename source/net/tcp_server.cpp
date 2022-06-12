@@ -46,7 +46,7 @@ namespace Fish
     {
         // 这里应该加一些检查
 
-        LOG_COUT << name_ << " begin listen...." << std::endl;
+        LOG_COUT << name_ << " begin listen....\n" << std::endl;
 
         assert(listenFd_ != -1);
 
@@ -82,7 +82,7 @@ namespace Fish
 
     }
 
-    void TcpServer::createConnection(const TcpAddr& addr)
+    std::shared_ptr<Channel> TcpServer::createConnection(const TcpAddr& addr)
     {
         int fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -96,12 +96,12 @@ namespace Fish
 
         auto ret = connect(fd, (struct sockaddr *)&fd_addr, sizeof(fd_addr));
 
-        assert(ret >=0);
+        if(ret<0)
+            return std::shared_ptr<Channel>();
 
         auto channel = uring_.addNewFd(fd);
 
-        if(beginCallBack_) beginCallBack_(channel);
-
+        return channel;
     }
 
     void TcpServer::stop()

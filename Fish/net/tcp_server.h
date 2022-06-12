@@ -35,14 +35,13 @@ namespace Fish
 
         virtual void stop();
 
-        void createConnection(const TcpAddr&);
+        [[nodiscard]]std::shared_ptr<Channel> createConnection(const TcpAddr&);
 
 
         void setReadCallBack(CallBackFun cb){readCallBack_ = cb;}
         void setCloseCallBack(std::function<void(int)> cb){closeCallBack_ = cb;}
         void setNewCallBack(std::function<void(int)> cb){newCallBack_ = cb;}
 
-        void setBeginCallBack(CallBackFun cb){beginCallBack_ = cb;}
         void setName(std::string name) { name_ = name; }
         void setTimer(Timer* timer){timer_ = timer;}
 
@@ -63,7 +62,6 @@ namespace Fish
         CallBackFun readCallBack_;   //收到信息回调
         std::function<void(int)> closeCallBack_; // 连接断开回调
         std::function<void(int)> newCallBack_; //新连接到来回调
-        CallBackFun beginCallBack_;  // 发起连接后回调
 
         int listenFd_ = -1;
         friend class Uring;

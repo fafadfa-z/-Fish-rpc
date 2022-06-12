@@ -57,6 +57,20 @@ namespace Fish
         throw std::runtime_error("TcpAddr: invalid ip or port");
     }
 
+    std::string TcpAddr::toStr()
+    {
+        std::string result;
+
+        result += "[";
+        result += ip_;
+        result += " : ";
+        result += std::to_string(port_);
+        result += "]";
+
+        return result;
+
+    }
+
 
     bool TcpAddr::avlid(const std::string &ip, const int port)
     {

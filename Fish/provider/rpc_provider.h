@@ -21,7 +21,7 @@ namespace Fish
     {
 
     public:
-        RpcProvider(TcpAddr addr, std::string name = "rpc server");
+        RpcProvider(TcpAddr addr, std::string name = "rpc provider");
 
         template <typename Func>
         void registerMethod(const std::string &name, std::function<Func> func)
@@ -41,6 +41,9 @@ namespace Fish
         }
 
         void begin() override;
+
+
+        void bindRegistry(TcpAddr);
 
 
     private:
@@ -96,6 +99,7 @@ namespace Fish
 
         ProtocolManager protocols_;
 
+        std::shared_ptr<Channel> providerChannel_;
 
     };
 }
