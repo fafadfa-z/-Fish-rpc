@@ -86,11 +86,7 @@ namespace Fish
                
                 content_ += thisContent;
                 handleState = RPCSTATE::READY;
-<<<<<<< HEAD
                 readIdx += content_.size();
-=======
-                readIdx += (content_.size());
->>>>>>> d619b99cf5c37dc52bee9a18df202937eff12591
                 return readIdx;
             }       
             case RPCSTATE::READY:    

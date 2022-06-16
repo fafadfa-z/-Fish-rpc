@@ -66,6 +66,7 @@
         "typeinfo": "cpp",
         "semaphore": "cpp",
         "climits": "cpp",
-        "cassert": "cpp"
+        "cassert": "cpp",
+        "future": "cpp"
     }
 }
