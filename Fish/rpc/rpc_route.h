@@ -34,9 +34,9 @@ namespace Fish
             virtual ~RouteStrategy();
             virtual auto& select(std::vector<T>& msgBus) = 0;
 
-            virtual checkStatus(T);
+            virtual Fish::NodeStatus& checkStatus(T& );
         private:    
-            std::unordered_map<std::string_view,ptr> prvdMap;                        
+            std::unordered_map<uint16_t,ptr> prvdMap;                        
     };
 
 
@@ -59,6 +59,12 @@ namespace Fish
                 return nullptr;
             }
 
+            bool checkStatus(ptr& prvd)
+            {
+                if(prvd->NodeStatus == NodeStatus::WORKING)
+                return false;
+                return true;
+            }
             
         private:
             std::mutex mtx_;
@@ -69,7 +75,7 @@ namespace Fish
 
 
     /**
-      *  @brief：路由引擎，对外接口，通过不同的ra，选择不用的调用provider方法
+      *  @brief：路由引擎，对外接口，通过不同的ra，选择不同的调用provider方法
     **/    
    
    template<class T>

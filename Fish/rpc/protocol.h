@@ -45,12 +45,11 @@ namespace Fish
 
         RPC_METHOD_LIST_PULL, //拉取方法列表
 
-
-
         FRPC_PREQUEST,  //服务提供商的请求
         FRPC_CREQUEST,  //服务消费者的请求
         FRPC_PRESPONSE, //服务提供商的响应
         FRPC_CRESPONSE, //服务消费者的响应
+
 
         RPC_METHOD_PREQUEST,    //   服务提供商请求方法调用
         RPC_METHOD_PRESPONSE,

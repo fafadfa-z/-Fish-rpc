@@ -46,7 +46,6 @@ namespace Fish
          return;
       }
          
-
       auto protocol = ProtocolManager::create(MsgType::FRPC_PROVIDER, 0, "");
 
       providerChannel_->send(protocol->result());
@@ -66,12 +65,14 @@ namespace Fish
       switch (type)
       {
       case MsgType::FRPC_NONSENCE:
-         LOG_FATAL << "不应该出现的情况..." << Fish::end;
+         LOG_FATAL << "不应该出现的情况..." << end;
          break;
 
       case MsgType::FRPC_HBEAT:
          hanleHealth(protocol, channel);
          break;
+         //????怎么会收到这种type的消息
+      case MsgType::FRPC_PROVIDER:
 
       case MsgType::FRPC_PROVIDER_RESPOSE:
          handleRegistryRes(protocol, channel);

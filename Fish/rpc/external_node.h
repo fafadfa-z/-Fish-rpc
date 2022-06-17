@@ -57,8 +57,7 @@ namespace Fish
     private:
         std::unordered_set<std::string> mathods_; //储存providered支持的方法。
     };
-
-    
+        
 
     class RegistryNode : public ExternNode
     {
