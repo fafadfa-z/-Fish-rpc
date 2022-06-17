@@ -101,6 +101,8 @@ namespace Fish
 
         auto channel = uring_.addNewFd(fd);
 
+        channel->setAddr(fd_addr);
+
         return channel;
     }
 

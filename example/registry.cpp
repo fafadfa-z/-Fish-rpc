@@ -3,21 +3,18 @@
 
 using namespace std;
 
-
-
-
-
-
 int main()
 {
-    cout<<"this is registry"<<endl;
+    system("clear");
+    
+    cout << "this is registry" << endl;
 
-    Fish::RpcRegistry s({"127.0.0.1", 8888});
+    Fish::RpcRegistry s({"127.0.0.1", 8888},"rpc registry",666);
 
     s.begin();
 
-    while(1) std::this_thread::sleep_for(2s);
+    while (1)
+        std::this_thread::sleep_for(2s);
 
     return 0;
 }
-

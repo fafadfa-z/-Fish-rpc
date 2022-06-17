@@ -86,7 +86,9 @@ namespace Fish
     private:
 
         void hanleHealth(Protocol::ptr&,std::shared_ptr<Channel>);  //处理心跳检测
-        void refreshHealth(int);
+
+        void handleRegistryRes(Protocol::ptr&,std::shared_ptr<Channel>);
+
         
 
 

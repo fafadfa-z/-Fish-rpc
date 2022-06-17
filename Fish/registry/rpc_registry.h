@@ -26,6 +26,7 @@ namespace Fish
         void begin() override;
 
         void handleMessage(std::shared_ptr<Channel>);
+        void handleClose(int);
 
         const std::string &name()const { return name_; }
 
@@ -42,9 +43,10 @@ namespace Fish
         void providerErase(size_t id);
 
 
+
     private:
         ProtocolManager protocols_;
-        NodeManager nodes_;
+        NodeManager nodeManager_;
         
 
         std::string name_;

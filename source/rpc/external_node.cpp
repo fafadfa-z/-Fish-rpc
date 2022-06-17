@@ -18,10 +18,7 @@ namespace Fish
 
     void ExternNode::sendMeg(std::string_view view)
     {
-        auto channel = channel_.lock();
-
-        if (channel)
-            channel->send(view);
+        channel_->send(view);
     }
 
     bool NodeManager::addNode(NodePtr node)
@@ -80,12 +77,8 @@ namespace Fish
         {
             auto protocol = ProtocolManager::createHeart(iter->second->getSelfId(), *content);
 
-  
-
             auto mes = protocol->result();
             iter->second->sendMeg(mes);
-
-            
         }
 
         

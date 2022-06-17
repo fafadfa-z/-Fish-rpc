@@ -32,7 +32,7 @@ namespace Fish
         temp.data.heartId_ = task.id;
         temp.data.targetId_ = targetId_;
 
-        cout << "发送心跳包: heartid= " << task.id << "targetId= " << targetId_ << "selfId= " << selfId_ << endl;
+        cout << "发送心跳包: heartid= " << task.id << "\ttargetId= " << targetId_ << "\tselfId= " << selfId_ << endl;
 
         insertNode(std::move(task));
 

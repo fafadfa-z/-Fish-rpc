@@ -71,10 +71,10 @@ namespace Fish
 
       case MsgType::FRPC_HBEAT:
          hanleHealth(protocol, channel);
-
          break;
-      case MsgType::FRPC_PROVIDER:
 
+      case MsgType::FRPC_PROVIDER_RESPOSE:
+         handleRegistryRes(protocol, channel);
          break;
       };
    }
@@ -103,9 +103,19 @@ namespace Fish
       channel->send(sendProtocol->result());
    }
 
+
+   void RpcProvider::handleRegistryRes(Protocol::ptr& protocol, Channel::ptr channel)
+   {
+      auto content = protocol->getContent();
+
+      auto id = std::stoul(content);
+      std::cout << "连接至注册中心: "<<channel->addr().toStr()<<" 注册id: "<<id<< std::endl;
+
+   }
+
    void RpcProvider::handleClose(int fd)
    {
-      // cout << "rpc provider close: " << fd << endl;
+      cout << "rpc provider close: " << fd << endl;
    }
    void RpcProvider::handleNew(int fd)
    {

@@ -250,12 +250,14 @@ namespace Fish
             auto conn = tempSend.front();
             tempSend.pop();
 
-            ::io_uring_sqe *sqe = io_uring_get_sqe(&ring_);
-
             auto [fd, ptr, len] = conn;
-
             auto iter = connections_.find(fd);
-            assert(iter != connections_.end());
+
+            if(iter == connections_.end()) // 连接已经被删除
+            {
+                continue;
+            }
+            ::io_uring_sqe *sqe = io_uring_get_sqe(&ring_);
 
             Channel &channel = *(iter->second).get();
 

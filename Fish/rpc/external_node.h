@@ -28,7 +28,7 @@ namespace Fish
     public:
         using ptr = std::shared_ptr<ExternNode>;
 
-        ExternNode(uint16_t id = 0) :id_(id){}
+        ExternNode(std::shared_ptr<Channel>channel, uint16_t id = 0) :channel_(channel),id_(id){}
 
         virtual ~ExternNode() = default;
 
@@ -39,9 +39,9 @@ namespace Fish
     protected:
         NodeStatus status_;
 
-        uint16_t id_;
+        std::shared_ptr<Channel> channel_;
 
-        std::weak_ptr<Channel> channel_;
+        uint16_t id_;
     };
 
     class ProviderNode : public ExternNode, public HeartManager
@@ -49,8 +49,8 @@ namespace Fish
     public:
         using ptr = std::shared_ptr<ExternNode>;
 
-        ProviderNode(uint16_t self, uint16_t target, size_t maxHeart = 3)
-            :  ExternNode(self),HeartManager(self, target, maxHeart)
+        ProviderNode(std::shared_ptr<Channel>channel, uint16_t self, uint16_t target, size_t maxHeart = 3)
+            :  ExternNode(channel,self),HeartManager(self, target, maxHeart)
         {
         }
 
@@ -65,7 +65,7 @@ namespace Fish
     public:
         using ptr = std::shared_ptr<RegistryNode>;
 
-        RegistryNode(uint16_t id = 0) :ExternNode(id){}
+        RegistryNode(std::shared_ptr<Channel>channel, uint16_t id = 0) :ExternNode(channel,id){}
 
         ~RegistryNode() = default;
 
