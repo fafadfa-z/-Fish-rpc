@@ -68,7 +68,6 @@ namespace Fish
         result += "]";
 
         return result;
-
     }
 
 

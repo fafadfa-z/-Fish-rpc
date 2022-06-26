@@ -39,7 +39,6 @@ namespace Fish
 
         void addTempTask(std::function<void()>); //增加临时任务
 
-
         const std::string& name()const {return name_;}
 
         void setName(const std::string& name){name_ = name;}

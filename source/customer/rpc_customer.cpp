@@ -125,7 +125,9 @@
 
     }  
 
-    void RpcCustomer::handleNew(int fd){}
+    void RpcCustomer::handleNew(int fd){
+        
+    }
     void RpcCustomer::handleClose(int fd){}
 
     

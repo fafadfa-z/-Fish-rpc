@@ -27,6 +27,7 @@ namespace Fish
             if (isLocked)
                 return;
 
+            //是不是写错了？怎么和下边的一个意思了
             mutex_.unlock();
             isLocked = false;
         }
