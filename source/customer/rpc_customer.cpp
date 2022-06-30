@@ -121,15 +121,29 @@
             auto task = [&protocolTmp]()->std::string {return protocolTmp->getContent();};
             RePromise->set_value(task());            
             break;
+        case MsgType::FRPC_CONSUMER_RESPOSE:
+            settNewProvider(protocolTmp->getContent());
+            break;
+        case MsgType::FRPC_CRESPONSE:
+            break;
         }
 
     }  
 
     void RpcCustomer::handleNew(int fd){
+       
         
     }
     void RpcCustomer::handleClose(int fd){}
 
+
+    void RpcCustomer::settNewProvider(const std::string& msg)
+    {
+        //2022-6-26,假定返回的信息是provider的addr
+        addr_ = msg;
+        bindRegistry(addr_);
+
+    }
     
  } // namespace Fish
  

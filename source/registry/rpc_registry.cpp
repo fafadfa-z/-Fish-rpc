@@ -80,7 +80,7 @@ namespace Fish
 
         // cout << "新provider到来, 为其分配id: " << id << endl;
 
-       a // NodeManager::NodePtr newProvider = std::make_shared<ProviderNode>(channel,id_, id);
+        // NodeManager::NodePtr newProvider = std::make_shared<ProviderNode>(channel,id_, id);
 
         // nodes_.addNode(newProvider);
 

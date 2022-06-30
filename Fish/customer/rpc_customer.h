@@ -128,6 +128,9 @@ namespace Fish
              */
             void setRR(std::function<void(Fish::Protocol::ptr&)> rrcb) {requeryResponse_ = rrcb;};
             
+
+            void settNewProvider(const std::string& );
+
         private:
 
             TcpAddr addr_;

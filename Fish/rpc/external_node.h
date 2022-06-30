@@ -18,7 +18,8 @@ namespace Fish
     {
         HEALTH,
         WEAK,
-        DEAD
+        DEAD,
+        WORKING
     };
 
     class Channel;
