@@ -26,6 +26,8 @@ namespace Fish
     {
         //轮询算法
         POLLING,
+        //随机算法
+        RANDOM,
         //新机上线
         TESTNODE
     };
@@ -34,11 +36,16 @@ namespace Fish
     class RouteStrategy
     {
         public:
-            using ptr = std::shared_ptr<RouteStrategy>;
+            using ptr = std::shared_ptr<T>;
             virtual ~RouteStrategy();
             virtual auto& select(std::vector<T>& msgBus) = 0;
 
-            virtual Fish::NodeStatus& checkStatus(T& );
+            virtual bool checkStatus(ptr& prvd)
+             {
+                if(prvd->NodeStatus == NodeStatus::WORKING)
+                return false;
+                return true;
+            }
         private:    
             std::unordered_map<uint16_t,ptr> prvdMap;                        
     };
@@ -62,18 +69,30 @@ namespace Fish
                 }
                 return nullptr;
             }
-
-            bool checkStatus(ptr& prvd)
-            {
-                if(prvd->NodeStatus == NodeStatus::WORKING)
-                return false;
-                return true;
-            }
             
         private:
             std::mutex mtx_;
             int idx_ = 0;
-            std::unordered_map<std::string_view,ptr> prvdMap;
+    };
+
+    /**
+     * @brief 随机策略
+     * 
+     * @tparam T 
+     */
+    template<class T>
+    class RrandomStrategy:public RouteStrategy
+    {
+        using ptr = std::shared_ptr<T>;
+        public:
+            ptr& select(std::vector<T>& msgBus)
+            {
+                std::lock_guard<std::mutex> lock(mtx_);
+                srand((unsigned)time(null));
+                return msgBus[rand() % msg.size()];
+            }
+        private:
+            std::mutex mtx_;
     };
 
 
@@ -183,6 +202,10 @@ namespace Fish
             std::unordered_map<ptr,int> testNodeMap_;
     };
 
+
+
+
+
     /**
       *  @brief：路由引擎，对外接口，通过不同的ra，选择不同的调用provider方法
     **/    
@@ -194,9 +217,12 @@ namespace Fish
             {
                 switch (ra)
                 {
-                case RouteAlgorithm::POLLING
+                case RouteAlgorithm::POLLING:
                     return pollingStrategy_;
-                
+                case RouteAlgorithm::RANDOM:
+                    return ;
+                case RouteAlgorithm::TESTNODE:
+                    return ;                
                 default:
                     break;
                 }
@@ -205,6 +231,7 @@ namespace Fish
        private:
             static typename RouteStrategy<T>::ptr pollingStrategy_;
             static typename RouteStrategy<T>::ptr testnodeStratety_;
+            static typename RouteStrategy<T>::ptr randomStrategy_;
    };
 
 template<class T>
@@ -212,4 +239,7 @@ typename  RouteStrategy<T>::ptr RoutiEgine<T>::pollingStrategy_ = std::make_shar
 
 template<class T>
 typename  RouteStrategy<T>::ptr RoutiEgine<T>::testnodeStratety_ = std::make_shared<TestnodeStrategy<T>>();
+
+template<class T>
+typename  RouteStrategy<T>::ptr RoutiEgine<T>::randomStrategy_ = std::make_shared<RrandomStrategy<T>>();
 }
